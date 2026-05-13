@@ -3,6 +3,8 @@ package com.metroica.sgip_backend.movimientos;
 import com.metroica.sgip_backend.shared.enums.TipoMovimiento;
 import com.metroica.sgip_backend.productos.Producto;
 import com.metroica.sgip_backend.seguridad.Usuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -15,6 +17,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "inventario_movimientos")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Data
 public class InventarioMovimiento {
 
@@ -28,6 +31,7 @@ public class InventarioMovimiento {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonIgnore
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)
@@ -45,10 +49,13 @@ public class InventarioMovimiento {
     @Column(name = "stock_despues", nullable = false)
     private Integer stockDespues;
 
-    @Column(name = "costo_unitario")
+    @Column(name = "costo_unitario", precision = 10, scale = 2)
     private BigDecimal costoUnitario;
 
+    @Column(length = 300)
     private String motivo;
+
+    @Column(length = 100)
     private String referencia;
 
     @Column(nullable = false, updatable = false)

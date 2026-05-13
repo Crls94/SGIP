@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/inteligencia")
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 public class InteligenciaController {
 
     private final InteligenciaService inteligenciaService;
-    private final PrediccionRepository prediccionRepository;
 
     @GetMapping("/datos-entrenamiento")
     public ResponseEntity<List<MovimientoExportDTO>> obtenerDatos() {
@@ -24,25 +22,6 @@ public class InteligenciaController {
 
     @GetMapping("/predicciones")
     public ResponseEntity<List<PrediccionResponseDTO>> obtenerPredicciones() {
-        List<PrediccionResponseDTO> predicciones = prediccionRepository.findUltimasPredicciones()
-                .stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(predicciones);
-    }
-
-    private PrediccionResponseDTO toDTO(PrediccionDemanda p) {
-        PrediccionResponseDTO dto = new PrediccionResponseDTO();
-        dto.setId(p.getId());
-        dto.setProductoNombre(p.getProducto() != null ? p.getProducto().getNombre() : null);
-        dto.setSemanaInicio(p.getSemanaInicio());
-        dto.setSemanaFin(p.getSemanaFin());
-        dto.setCantidadPredicha(p.getCantidadPredicha());
-        dto.setCantidadReal(p.getCantidadReal());
-        dto.setErrorPorcentaje(p.getErrorPorcentaje());
-        dto.setConfianza(p.getConfianza());
-        dto.setModeloVersion(p.getModeloVersion());
-        dto.setGeneradoEn(p.getGeneradoEn());
-        return dto;
+        return ResponseEntity.ok(inteligenciaService.obtenerPredicciones());
     }
 }

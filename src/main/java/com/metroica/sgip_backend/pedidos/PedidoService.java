@@ -1,14 +1,21 @@
 package com.metroica.sgip_backend.pedidos;
 
+import com.metroica.sgip_backend.movimientos.InventarioMovimiento;
+import com.metroica.sgip_backend.movimientos.MovimientoRepository;
+import com.metroica.sgip_backend.movimientos.MovimientoService;
 import com.metroica.sgip_backend.productos.Producto;
 import com.metroica.sgip_backend.productos.ProductoRepository;
+import com.metroica.sgip_backend.seguridad.SecurityUtils;
 import com.metroica.sgip_backend.seguridad.Usuario;
-import com.metroica.sgip_backend.seguridad.UsuarioRepository;
+import com.metroica.sgip_backend.shared.enums.CanalPedido;
 import com.metroica.sgip_backend.shared.enums.EstadoPedido;
+import com.metroica.sgip_backend.shared.enums.TipoMovimiento;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -20,26 +27,30 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final PedidoDetalleRepository detalleRepository;
     private final ProductoRepository productoRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final MovimientoRepository movimientoRepository;
+    private final MovimientoService movimientoService;
 
     @Transactional
     public PedidoResponseDTO crearPedido(PedidoCreateDTO dto) {
-        Usuario usuario = usuarioRepository.findAll().stream().findFirst()
-                .orElseThrow(() -> new RuntimeException("No hay usuarios registrados en el sistema"));
+        UUID userId = SecurityUtils.getCurrentUserId();
 
         Pedido pedido = new Pedido();
+        Usuario usuario = new Usuario();
+        usuario.setId(userId);
         pedido.setUsuario(usuario);
         pedido.setCanal(dto.getCanal());
         pedido.setClienteNombre(dto.getClienteNombre());
         pedido.setClienteTelefono(dto.getClienteTelefono());
         pedido.setClienteDireccion(dto.getClienteDireccion());
         pedido.setObservaciones(dto.getObservaciones());
-        pedido.setPrioridad(dto.getCanal().name().equals("DELIVERY") ? (short) 3 : (short) 5);
+        pedido.setPrioridad(dto.getCanal() == CanalPedido.DELIVERY ? (short) 3 : (short) 5);
 
         pedidoRepository.save(pedido);
 
+        List<PedidoDetalle> detalles = new ArrayList<>();
+
         for (PedidoItemDTO itemDTO : dto.getItems()) {
-            Producto producto = productoRepository.findById(itemDTO.getProductoId())
+            Producto producto = productoRepository.findByIdWithLock(itemDTO.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + itemDTO.getProductoId()));
 
             if (producto.getStockActual() < itemDTO.getCantidad()) {
@@ -48,18 +59,23 @@ public class PedidoService {
 
             producto.setStockActual(producto.getStockActual() - itemDTO.getCantidad());
             productoRepository.save(producto);
+            movimientoService.verificarAlertaStock(producto, producto.getStockActual());
 
             PedidoDetalle detalle = new PedidoDetalle();
             detalle.setPedido(pedido);
             detalle.setProducto(producto);
             detalle.setCantidad(itemDTO.getCantidad());
             detalle.setPrecioUnitario(producto.getPrecioVenta());
+            detalles.add(detalle);
 
-            detalleRepository.save(detalle);
+            registrarMovimiento(producto, userId, TipoMovimiento.SALIDA, itemDTO.getCantidad(),
+                    stockAntes(producto, itemDTO.getCantidad()), producto.getStockActual(),
+                    "Salida por pedido " + pedido.getId());
         }
 
-        Pedido creado = pedidoRepository.findById(pedido.getId()).orElseThrow();
-        return toResponseDTO(creado);
+        detalleRepository.saveAll(detalles);
+
+        return toResponseDTO(pedidoRepository.findById(pedido.getId()).orElseThrow());
     }
 
     @Transactional(readOnly = true)
@@ -70,13 +86,85 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public PedidoResponseDTO obtenerPedido(UUID id) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + id));
+        return toResponseDTO(pedido);
+    }
+
     @Transactional
     public PedidoResponseDTO actualizarEstado(UUID id, String estado) {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + id));
-        pedido.setEstado(EstadoPedido.valueOf(estado));
+        EstadoPedido nuevoEstado = EstadoPedido.valueOf(estado);
+        validarTransicion(pedido.getEstado(), nuevoEstado);
+
+        if (nuevoEstado == EstadoPedido.CANCELADO) {
+            restaurarStockPedido(pedido);
+        }
+
+        if (nuevoEstado == EstadoPedido.DESPACHADO) {
+            pedido.setFechaDespacho(LocalDateTime.now());
+        }
+
+        pedido.setEstado(nuevoEstado);
         pedidoRepository.save(pedido);
         return toResponseDTO(pedido);
+    }
+
+    private void restaurarStockPedido(Pedido pedido) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        List<PedidoDetalle> detalles = detalleRepository.findByPedidoIdWithProducto(pedido.getId());
+
+        for (PedidoDetalle detalle : detalles) {
+            Producto producto = productoRepository.findByIdWithLock(detalle.getProducto().getId())
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + detalle.getProducto().getId()));
+            int stockAntes = producto.getStockActual();
+            int stockDespues = stockAntes + detalle.getCantidad();
+            producto.setStockActual(stockDespues);
+            productoRepository.save(producto);
+
+            registrarMovimiento(producto, userId, TipoMovimiento.ENTRADA, detalle.getCantidad(), stockAntes, stockDespues,
+                    "Reposicion por cancelacion de pedido " + pedido.getId());
+        }
+    }
+
+    private void validarTransicion(EstadoPedido actual, EstadoPedido nuevo) {
+        if (actual == nuevo) {
+            return;
+        }
+        boolean valida = switch (actual) {
+            case PENDIENTE -> nuevo == EstadoPedido.EN_PROCESO || nuevo == EstadoPedido.CANCELADO;
+            case EN_PROCESO -> nuevo == EstadoPedido.LISTO || nuevo == EstadoPedido.CANCELADO;
+            case LISTO -> nuevo == EstadoPedido.DESPACHADO || nuevo == EstadoPedido.CANCELADO;
+            case DESPACHADO, CANCELADO -> false;
+        };
+        if (!valida) {
+            throw new RuntimeException("Transicion de estado invalida: " + actual + " -> " + nuevo);
+        }
+    }
+
+    private void registrarMovimiento(Producto producto, UUID userId, TipoMovimiento tipo, int cantidad,
+                                     int stockAntes, int stockDespues, String motivo) {
+        InventarioMovimiento movimiento = new InventarioMovimiento();
+        movimiento.setProducto(producto);
+        movimiento.setTipo(tipo);
+        movimiento.setCantidad(cantidad);
+        movimiento.setStockAntes(stockAntes);
+        movimiento.setStockDespues(stockDespues);
+        movimiento.setMotivo(motivo);
+        movimiento.setFecha(LocalDateTime.now());
+
+        Usuario usuario = new Usuario();
+        usuario.setId(userId);
+        movimiento.setUsuario(usuario);
+
+        movimientoRepository.save(movimiento);
+    }
+
+    private int stockAntes(Producto producto, int cantidadSalida) {
+        return producto.getStockActual() + cantidadSalida;
     }
 
     private PedidoResponseDTO toResponseDTO(Pedido pedido) {

@@ -26,6 +26,11 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.verColaPedidos());
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PedidoResponseDTO> obtenerPedido(@PathVariable UUID id) {
+        return ResponseEntity.ok(pedidoService.obtenerPedido(id));
+    }
+
     @PatchMapping("/{id}/estado")
     public ResponseEntity<PedidoResponseDTO> actualizarEstado(@PathVariable UUID id, @RequestParam String estado) {
         return ResponseEntity.ok(pedidoService.actualizarEstado(id, estado));

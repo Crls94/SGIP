@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,20 +31,23 @@ public class Pedido {
     private Usuario usuario;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private CanalPedido canal;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private EstadoPedido estado = EstadoPedido.PENDIENTE;
 
     @Min(1) @Max(10)
+    @Column(nullable = false, columnDefinition = "smallint")
     private Short prioridad = 5;
 
-    @Column(name = "cliente_nombre")
+    @Column(name = "cliente_nombre", length = 200)
     private String clienteNombre;
 
-    @Column(name = "cliente_telefono")
+    @Column(name = "cliente_telefono", length = 20)
     private String clienteTelefono;
 
     @Column(name = "cliente_dir")
@@ -50,7 +55,7 @@ public class Pedido {
 
     private String observaciones;
 
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
 
     @Column(name = "fecha_ingreso", insertable = false, updatable = false)

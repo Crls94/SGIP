@@ -7,6 +7,8 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,7 +39,7 @@ public class Producto {
     private String descripcion;
     private String marca;
 
-    @Column(name = "unidad_medida", length = 30)
+    @Column(name = "unidad_medida", nullable = false, length = 30)
     private String unidadMedida = "UNIDAD";
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -69,6 +71,8 @@ public class Producto {
     private Integer puntoPedido = 30;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(nullable = false)
     private EstadoProducto estado = EstadoProducto.ACTIVO;
 
     @Column(name = "imagen_url")

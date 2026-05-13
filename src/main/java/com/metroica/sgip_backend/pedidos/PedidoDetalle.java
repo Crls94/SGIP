@@ -36,6 +36,6 @@ public class PedidoDetalle {
     @Column(name = "precio_unitario", precision = 10, scale = 2, nullable = false)
     private BigDecimal precioUnitario;
 
-    @Column(insertable = false, updatable = false)
+    @Column(insertable = false, updatable = false, precision = 12, scale = 2)
     private BigDecimal subtotal;
 }

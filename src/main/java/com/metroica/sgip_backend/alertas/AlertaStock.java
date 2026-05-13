@@ -5,6 +5,8 @@ import com.metroica.sgip_backend.productos.Producto;
 import com.metroica.sgip_backend.seguridad.Usuario;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,6 +31,7 @@ public class AlertaStock {
     private Integer puntoPedidoReferencia;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)
     private EstadoAlerta estado = EstadoAlerta.ACTIVA;
 

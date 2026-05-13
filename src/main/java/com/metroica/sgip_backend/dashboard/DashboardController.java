@@ -1,8 +1,8 @@
 package com.metroica.sgip_backend.dashboard;
 
 import com.metroica.sgip_backend.alertas.AlertaStockRepository;
+import com.metroica.sgip_backend.inteligencia.InteligenciaService;
 import com.metroica.sgip_backend.inteligencia.PrediccionDemanda;
-import com.metroica.sgip_backend.inteligencia.PrediccionRepository;
 import com.metroica.sgip_backend.pedidos.PedidoRepository;
 import com.metroica.sgip_backend.productos.ProductoRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,8 +22,9 @@ public class DashboardController {
 
     private final AlertaStockRepository alertaStockRepository;
     private final PedidoRepository pedidoRepository;
-    private final PrediccionRepository prediccionRepository;
+    private final InteligenciaService inteligenciaService;
     private final ProductoRepository productoRepository;
+    private final DashboardService dashboardService;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getDashboard() {
@@ -32,10 +34,7 @@ public class DashboardController {
         dashboard.put("pedidosEnCola", pedidoRepository.countPedidosActivos());
         dashboard.put("productosConStockBajo", productoRepository.findProductosConStockCritico().size());
 
-        PrediccionDemanda ultimaPrediccion = prediccionRepository.findAll()
-                .stream()
-                .max((a, b) -> a.getGeneradoEn().compareTo(b.getGeneradoEn()))
-                .orElse(null);
+        PrediccionDemanda ultimaPrediccion = inteligenciaService.obtenerUltimaPrediccion();
 
         if (ultimaPrediccion != null) {
             Map<String, Object> info = new LinkedHashMap<>();
@@ -48,5 +47,10 @@ public class DashboardController {
         }
 
         return ResponseEntity.ok(dashboard);
+    }
+
+    @GetMapping("/ventas-7-dias")
+    public ResponseEntity<List<VentaDiariaDTO>> ventas7Dias() {
+        return ResponseEntity.ok(dashboardService.getVentasUltimos7Dias());
     }
 }

@@ -10,6 +10,7 @@ import java.util.UUID;
 @Data
 public class PrediccionResponseDTO {
     private UUID id;
+    private UUID productoId;
     private String productoNombre;
     private LocalDate semanaInicio;
     private LocalDate semanaFin;

@@ -2,11 +2,12 @@ package com.metroica.sgip_backend.productos;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -17,8 +18,8 @@ public class ProductoController {
     private final ProductoService productoService;
 
     @GetMapping
-    public ResponseEntity<List<ProductoResponseDTO>> listarInventario() {
-        return ResponseEntity.ok(productoService.listarInventario());
+    public ResponseEntity<Page<ProductoResponseDTO>> listarInventario(Pageable pageable) {
+        return ResponseEntity.ok(productoService.listarInventario(pageable));
     }
 
     @PostMapping
