@@ -17,6 +17,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Servicio de negocio para gestionar productos del inventario.
+ * Centraliza reglas de creación, actualización, eliminación y registro de ajustes de stock.
+ */
 public class ProductoService {
 
     private final ProductoRepository productoRepository;

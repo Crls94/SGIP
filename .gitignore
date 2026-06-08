@@ -37,4 +37,4 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 ### Archivos generados por la app ###
-reportes/
+/reportes/

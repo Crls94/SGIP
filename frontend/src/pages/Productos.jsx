@@ -31,6 +31,9 @@ export default function Productos() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
+  const [proveedorFiltro, setProveedorFiltro] = useState('');
+  const [stockFiltro, setStockFiltro] = useState('');
 
   const fetchProductos = useCallback(async () => {
     try {
@@ -138,8 +141,14 @@ export default function Productos() {
   const update = (f) => (e) => setForm({ ...form, [f]: e.target.value });
   const productosFiltrados = productos.content.filter((p) => {
     const term = search.trim().toLowerCase();
-    if (!term) return true;
-    return p.nombre.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+    const coincideTexto = !term || p.nombre.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+    const coincideCategoria = !categoriaFiltro || p.categoriaNombre === categoriaFiltro;
+    const coincideProveedor = !proveedorFiltro || p.proveedorNombre === proveedorFiltro;
+    const coincideStock = !stockFiltro
+      || (stockFiltro === 'critico' && p.stockActual <= p.puntoPedido)
+      || (stockFiltro === 'ok' && p.stockActual > p.puntoPedido)
+      || (stockFiltro === 'sin_stock' && p.stockActual <= 0);
+    return coincideTexto && coincideCategoria && coincideProveedor && coincideStock;
   });
 
   return (
@@ -160,7 +169,20 @@ export default function Productos() {
 
       <div className="filter-bar">
         <input className="form-input" placeholder="Buscar producto..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 260 }} />
-        <button className="btn btn-outline btn-sm" type="button">Filtros x</button>
+        <select className="form-input" value={categoriaFiltro} onChange={(e) => setCategoriaFiltro(e.target.value)} style={{ maxWidth: 180 }}>
+          <option value="">Todas las categorias</option>
+          {categorias.map((c) => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
+        </select>
+        <select className="form-input" value={proveedorFiltro} onChange={(e) => setProveedorFiltro(e.target.value)} style={{ maxWidth: 190 }}>
+          <option value="">Todos los proveedores</option>
+          {proveedores.map((p) => <option key={p.id} value={p.nombre}>{p.nombre}</option>)}
+        </select>
+        <select className="form-input" value={stockFiltro} onChange={(e) => setStockFiltro(e.target.value)} style={{ maxWidth: 150 }}>
+          <option value="">Todo stock</option>
+          <option value="critico">Stock critico</option>
+          <option value="ok">Stock OK</option>
+          <option value="sin_stock">Sin stock</option>
+        </select>
       </div>
 
       {loading ? (

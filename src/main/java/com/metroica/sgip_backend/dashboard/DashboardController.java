@@ -33,6 +33,15 @@ public class DashboardController {
         dashboard.put("alertasStockCritico", alertaStockRepository.countAlertasActivas());
         dashboard.put("pedidosEnCola", pedidoRepository.countPedidosActivos());
         dashboard.put("productosConStockBajo", productoRepository.findProductosConStockCritico().size());
+        dashboard.put("productosActivos", productoRepository.countProductosActivos());
+        dashboard.put("ventaHoy", pedidoRepository.sumVentasHoy());
+        dashboard.put("pedidosPorEstado", toCountMap(pedidoRepository.countPedidosPorEstado()));
+        dashboard.put("pedidosPorCanal", toCountMap(pedidoRepository.countPedidosPorCanal()));
+        dashboard.put("inventarioPorEstado", Map.of(
+                "EN_STOCK", productoRepository.countProductosConStockOk(),
+                "STOCK_BAJO", productoRepository.countProductosConStockBajo(),
+                "SIN_STOCK", productoRepository.countProductosSinStock()
+        ));
 
         PrediccionDemanda ultimaPrediccion = inteligenciaService.obtenerUltimaPrediccion();
 
@@ -47,6 +56,16 @@ public class DashboardController {
         }
 
         return ResponseEntity.ok(dashboard);
+    }
+
+    private Map<String, Long> toCountMap(List<Object[]> rows) {
+        Map<String, Long> result = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            Object key = row[0];
+            Number value = (Number) row[1];
+            result.put(key != null ? key.toString() : "N/A", value.longValue());
+        }
+        return result;
     }
 
     @GetMapping("/ventas-7-dias")

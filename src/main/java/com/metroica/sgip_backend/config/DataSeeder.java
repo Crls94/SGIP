@@ -5,12 +5,14 @@ import com.metroica.sgip_backend.seguridad.UsuarioRepository;
 import com.metroica.sgip_backend.shared.enums.RolUsuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -24,7 +26,7 @@ public class DataSeeder implements CommandLineRunner {
                 .toList();
 
         if (!corruptos.isEmpty()) {
-            System.out.println("=== REPARANDO CONTRASEÑAS (PENDING_HASH → BCrypt) ===");
+            System.out.println("=== REPARANDO CONTRASEÑAS DE DESARROLLO (PENDING_HASH -> BCrypt) ===");
             for (Usuario u : corruptos) {
                 String defaultPass = switch (u.getRol()) {
                     case ADMINISTRADOR -> "admin123";
@@ -33,8 +35,8 @@ public class DataSeeder implements CommandLineRunner {
                 };
                 u.setPasswordHash(passwordEncoder.encode(defaultPass));
                 usuarioRepository.save(u);
-                System.out.println(u.getEmail() + " → " + defaultPass + " (" + u.getRol() + ")");
             }
+            System.out.println("Usuarios de desarrollo reparados: " + corruptos.size());
         }
 
         if (usuarioRepository.count() == 0) {
@@ -65,7 +67,7 @@ public class DataSeeder implements CommandLineRunner {
             gerente.setActivo(true);
             usuarioRepository.save(gerente);
 
-            System.out.println("=== NUEVOS USUARIOS CREADOS ===");
+            System.out.println("=== USUARIOS DE DESARROLLO CREADOS ===");
         }
     }
 }

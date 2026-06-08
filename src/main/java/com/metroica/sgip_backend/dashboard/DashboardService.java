@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Servicio de métricas gerenciales para el dashboard.
+ * Agrupa ventas recientes y completa días sin ventas para facilitar la visualización en frontend.
+ */
 public class DashboardService {
 
     private final PedidoRepository pedidoRepository;

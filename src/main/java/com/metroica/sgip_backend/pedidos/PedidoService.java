@@ -22,6 +22,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Servicio de negocio para la gestión de pedidos locales y delivery.
+ * Controla creación de pedidos, descuento/restauración de stock y transiciones de estado.
+ */
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
@@ -98,6 +102,9 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado: " + id));
         EstadoPedido nuevoEstado = EstadoPedido.valueOf(estado);
+        if (pedido.getEstado() == nuevoEstado) {
+            return toResponseDTO(pedido);
+        }
         validarTransicion(pedido.getEstado(), nuevoEstado);
 
         if (nuevoEstado == EstadoPedido.CANCELADO) {
@@ -131,9 +138,6 @@ public class PedidoService {
     }
 
     private void validarTransicion(EstadoPedido actual, EstadoPedido nuevo) {
-        if (actual == nuevo) {
-            return;
-        }
         boolean valida = switch (actual) {
             case PENDIENTE -> nuevo == EstadoPedido.EN_PROCESO || nuevo == EstadoPedido.CANCELADO;
             case EN_PROCESO -> nuevo == EstadoPedido.LISTO || nuevo == EstadoPedido.CANCELADO;
@@ -177,6 +181,17 @@ public class PedidoService {
         dto.setTotal(pedido.getTotal());
         dto.setFechaIngreso(pedido.getFechaIngreso());
         dto.setClienteNombre(pedido.getClienteNombre());
+        dto.setClienteTelefono(pedido.getClienteTelefono());
+        dto.setClienteDireccion(pedido.getClienteDireccion());
+        dto.setObservaciones(pedido.getObservaciones());
+        dto.setItems(detalleRepository.findByPedidoIdWithProducto(pedido.getId()).stream()
+                .map(detalle -> new PedidoResponseDTO.ItemDTO(
+                        detalle.getProducto().getId(),
+                        detalle.getProducto().getNombre(),
+                        detalle.getCantidad(),
+                        detalle.getPrecioUnitario(),
+                        detalle.getSubtotal()))
+                .toList());
         return dto;
     }
 }

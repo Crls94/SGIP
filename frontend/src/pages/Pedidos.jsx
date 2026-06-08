@@ -25,8 +25,12 @@ export default function Pedidos() {
   const [form, setForm] = useState({ canal: 'LOCAL', clienteNombre: '', clienteTelefono: '', clienteDireccion: '', observaciones: '' });
   const [saving, setSaving] = useState(false);
   const [confirmacion, setConfirmacion] = useState(null);
+  const [detallePedido, setDetallePedido] = useState(null);
+  const [loadingDetalle, setLoadingDetalle] = useState(false);
   const [tab, setTab] = useState('TODOS');
   const [busqueda, setBusqueda] = useState('');
+  const [canalFiltro, setCanalFiltro] = useState('');
+  const [prioridadFiltro, setPrioridadFiltro] = useState('');
 
   const fetchPedidos = useCallback(async () => {
     try {
@@ -36,11 +40,15 @@ export default function Pedidos() {
     finally { setLoading(false); }
   }, []);
 
+  const fetchProductos = useCallback(() => {
+    api.get('/productos?size=200').then(({ data }) => setProductos(data.content || [])).catch(() => {});
+  }, []);
+
   useEffect(() => { fetchPedidos(); }, [fetchPedidos]);
 
   useEffect(() => {
-    api.get('/productos?size=200').then(({ data }) => setProductos(data.content || [])).catch(() => {});
-  }, []);
+    fetchProductos();
+  }, [fetchProductos]);
 
   const addItem = () => setItems([...items, { productoId: '', cantidad: 1 }]);
 
@@ -90,6 +98,7 @@ export default function Pedidos() {
       setItems([{ productoId: '', cantidad: 1 }]);
       setForm({ canal: 'LOCAL', clienteNombre: '', clienteTelefono: '', clienteDireccion: '', observaciones: '' });
       fetchPedidos();
+      fetchProductos();
     } catch (err) {
       toast(err.response?.data?.error || 'Error al crear pedido', 'error');
     } finally { setSaving(false); setConfirmacion(null); }
@@ -105,6 +114,18 @@ export default function Pedidos() {
     }
   };
 
+  const verDetalle = async (id) => {
+    setLoadingDetalle(true);
+    try {
+      const { data } = await api.get(`/pedidos/${id}`);
+      setDetallePedido(data);
+    } catch {
+      toast('No se pudo cargar el detalle del pedido', 'error');
+    } finally {
+      setLoadingDetalle(false);
+    }
+  };
+
   const update = (f) => (e) => setForm({ ...form, [f]: e.target.value });
   const tabs = [
     { id: 'TODOS', label: 'Todos' },
@@ -117,6 +138,13 @@ export default function Pedidos() {
 
   const pedidosFiltrados = pedidos
     .filter((p) => tab === 'TODOS' || p.estado === tab)
+    .filter((p) => !canalFiltro || p.canal === canalFiltro)
+    .filter((p) => {
+      if (!prioridadFiltro) return true;
+      if (prioridadFiltro === 'alta') return p.prioridad <= 3;
+      if (prioridadFiltro === 'media') return p.prioridad === 4;
+      return p.prioridad >= 5;
+    })
     .filter((p) => {
       const term = busqueda.trim().toLowerCase();
       if (!term) return true;
@@ -161,7 +189,17 @@ export default function Pedidos() {
               onChange={(e) => setBusqueda(e.target.value)}
               style={{ maxWidth: 340 }}
             />
-            <button type="button" className="btn btn-outline btn-sm">Filtros x</button>
+            <select className="form-input" value={canalFiltro} onChange={(e) => setCanalFiltro(e.target.value)} style={{ maxWidth: 150 }}>
+              <option value="">Todos los canales</option>
+              <option value="LOCAL">Local</option>
+              <option value="DELIVERY">Delivery</option>
+            </select>
+            <select className="form-input" value={prioridadFiltro} onChange={(e) => setPrioridadFiltro(e.target.value)} style={{ maxWidth: 150 }}>
+              <option value="">Toda prioridad</option>
+              <option value="alta">Alta</option>
+              <option value="media">Media</option>
+              <option value="baja">Baja</option>
+            </select>
           </div>
 
           <div className="table-wrapper" style={{ marginTop: 8 }}>
@@ -184,7 +222,7 @@ export default function Pedidos() {
                       <td>S/ {p.total}</td>
                       <td>
                         <div className="flex-row" style={{ gap: 6 }}>
-                          <button type="button" className="btn btn-outline btn-sm" title="Ver detalle">○</button>
+                          <button type="button" className="btn btn-outline btn-sm" title="Ver detalle" onClick={() => verDetalle(p.id)} disabled={loadingDetalle}>Ver</button>
                           <select className="form-input" style={{ width: 145, padding: '5px 28px 5px 10px', fontSize: 'var(--font-caption)' }} value={p.estado} onChange={(e) => cambiarEstado(p.id, e.target.value)}>
                             {ESTADOS.map((e) => <option key={e} value={e} disabled={e === p.estado}>{estadoConfig[e]?.label || e}</option>)}
                           </select>
@@ -290,11 +328,43 @@ export default function Pedidos() {
             <button
               className="btn btn-accent btn-lg"
               style={{ width: '100%' }}
-              disabled={items.some(i => !i.productoId) || items.some(i => i.cantidad > (getStockDisponible(i.productoId) || 0))}
+              disabled={items.some(i => !i.productoId) || items.some(i => i.cantidad < 1) || items.some(i => i.cantidad > (getStockDisponible(i.productoId) || 0))}
             >
               Confirmar Pedido
             </button>
           </form>
+        )}
+      </Modal>
+
+      <Modal open={!!detallePedido} onClose={() => setDetallePedido(null)} title={`Detalle Pedido #${detallePedido?.numero || ''}`}>
+        {detallePedido && (
+          <div>
+            <div className="card mb-16" style={{ borderRadius: 10 }}>
+              <p><strong>Cliente:</strong> {detallePedido.clienteNombre || 'Consumidor final'}</p>
+              <p><strong>Canal:</strong> {detallePedido.canal === 'DELIVERY' ? 'Delivery' : 'Local'}</p>
+              <p><strong>Estado:</strong> {estadoConfig[detallePedido.estado]?.label || detallePedido.estado}</p>
+              <p><strong>Telefono:</strong> {detallePedido.clienteTelefono || '-'}</p>
+              <p><strong>Direccion:</strong> {detallePedido.clienteDireccion || '-'}</p>
+              <p><strong>Observaciones:</strong> {detallePedido.observaciones || '-'}</p>
+            </div>
+
+            <div className="table-wrapper mb-16">
+              <table className="table">
+                <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+                <tbody>
+                  {(detallePedido.items || []).map((item, idx) => (
+                    <tr key={`${item.productoId}-${idx}`}>
+                      <td>{item.productoNombre}</td>
+                      <td>{item.cantidad}</td>
+                      <td>S/ {item.precioUnitario ?? '-'}</td>
+                      <td>S/ {item.subtotal ?? '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <h3>Total: S/ {detallePedido.total}</h3>
+          </div>
         )}
       </Modal>
     </div>

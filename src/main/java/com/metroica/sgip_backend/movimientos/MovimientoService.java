@@ -21,6 +21,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Servicio de negocio para registrar movimientos de inventario.
+ * Protege reglas críticas como impedir salidas o mermas cuando no existe stock suficiente.
+ */
 public class MovimientoService {
 
     private final MovimientoRepository movimientoRepository;

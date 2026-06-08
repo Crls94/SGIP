@@ -11,6 +11,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Servicio de inteligencia de demanda.
+ * Expone datos históricos de salida para entrenamiento y consulta predicciones almacenadas.
+ */
 public class InteligenciaService {
 
     private final MovimientoRepository movimientoRepository;
@@ -35,7 +39,7 @@ public class InteligenciaService {
 
     @Transactional(readOnly = true)
     public PrediccionDemanda obtenerUltimaPrediccion() {
-        return prediccionRepository.findTopByOrderByGeneradoEnDesc().orElse(null);
+        return prediccionRepository.findFirstByOrderByGeneradoEnDesc().orElse(null);
     }
 
     private PrediccionResponseDTO toDTO(PrediccionDemanda p) {

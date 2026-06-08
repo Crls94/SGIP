@@ -9,6 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+/**
+ * Servicio de autenticación y registro de usuarios.
+ * Valida credenciales, cifra contraseñas con BCrypt y emite tokens JWT para el frontend.
+ */
 public class AuthService {
 
     private final UsuarioRepository usuarioRepository;

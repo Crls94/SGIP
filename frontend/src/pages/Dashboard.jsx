@@ -31,10 +31,10 @@ export default function Dashboard() {
 
   if (!data) return <div className="empty-state"><div className="spinner spinner-dark" style={{ width: 32, height: 32 }} /></div>;
 
-  const estadosCount = pedidosData.reduce((acc, p) => { acc[p.estado] = (acc[p.estado] || 0) + 1; return acc; }, {});
+  const estadosCount = data.pedidosPorEstado || pedidosData.reduce((acc, p) => { acc[p.estado] = (acc[p.estado] || 0) + 1; return acc; }, {});
   const pedidosByEstado = Object.entries(estadosCount).map(([name, value]) => ({ name: translateEstado(name), value }));
 
-  const canalCount = pedidosData.reduce((acc, p) => { acc[p.canal] = (acc[p.canal] || 0) + 1; return acc; }, {});
+  const canalCount = data.pedidosPorCanal || pedidosData.reduce((acc, p) => { acc[p.canal] = (acc[p.canal] || 0) + 1; return acc; }, {});
   const pedidosByCanal = Object.entries(canalCount).map(([name, value]) => ({ name: name === 'LOCAL' ? 'Local' : 'Delivery', value }));
 
   const alertasByProducto = alertasData.slice(0, 8).map(a => ({
@@ -60,9 +60,10 @@ export default function Dashboard() {
   const localCount = pedidosData.filter(p => p.canal === 'LOCAL').length;
   const deliveryPct = totalPedidos > 0 ? Math.round((deliveryCount / totalPedidos) * 100) : 0;
 
-  const stockOkCount = productosData.filter(p => p.stockActual > p.puntoPedido).length;
-  const stockLowCount = productosData.filter(p => p.stockActual > 0 && p.stockActual <= p.puntoPedido).length;
-  const stockZeroCount = productosData.filter(p => p.stockActual <= 0).length;
+  const inventarioPorEstado = data.inventarioPorEstado || {};
+  const stockOkCount = inventarioPorEstado.EN_STOCK ?? productosData.filter(p => p.stockActual > p.puntoPedido).length;
+  const stockLowCount = inventarioPorEstado.STOCK_BAJO ?? productosData.filter(p => p.stockActual > 0 && p.stockActual <= p.puntoPedido).length;
+  const stockZeroCount = inventarioPorEstado.SIN_STOCK ?? productosData.filter(p => p.stockActual <= 0).length;
   const stockByStatus = [
     { name: 'En Stock', value: stockOkCount, color: '#43A047' },
     { name: 'Stock Bajo', value: stockLowCount, color: '#FF8F00' },
@@ -82,8 +83,8 @@ export default function Dashboard() {
       <div className="wire-card-grid mb-24">
         <WireMetric title="Stock Critico" value={data.alertasStockCritico ?? 0} suffix="productos" tone="warning" />
         <WireMetric title="Pedidos Pendientes" value={data.pedidosEnCola ?? 0} suffix="pedidos" tone="info" />
-        <WireMetric title="Venta Hoy" value={`S/ ${Math.round(pedidosData.reduce((acc, p) => acc + Number(p.total || 0), 0)).toLocaleString('es-PE')}`} suffix="segun pedidos activos" tone="success" />
-        <WireMetric title="Productos Activos" value={productosData.length.toLocaleString('es-PE')} suffix="productos" tone="neutral" />
+        <WireMetric title="Venta Hoy" value={`S/ ${Math.round(Number(data.ventaHoy ?? 0)).toLocaleString('es-PE')}`} suffix="pedidos no cancelados" tone="success" />
+        <WireMetric title="Productos Activos" value={Number(data.productosActivos ?? productosData.length).toLocaleString('es-PE')} suffix="productos" tone="neutral" />
       </div>
 
       <div className="dashboard-charts">
