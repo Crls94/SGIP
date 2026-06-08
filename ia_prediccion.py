@@ -31,7 +31,7 @@ def preparar_ventas_semanales(df):
 
     data = df.copy()
     data["fecha"] = pd.to_datetime(data["fecha"])
-    data["semana"] = data["fecha"].dt.to_period("W-MON").dt.start_time
+    data["semana"] = data["fecha"].dt.to_period("W-SUN").dt.start_time
 
     agrupado = (
         data.groupby(["productoId", "productoNombre", "semana"])["cantidad"]
