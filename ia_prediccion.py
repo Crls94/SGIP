@@ -45,6 +45,27 @@ def preparar_ventas_semanales(df):
     return agrupado
 
 
+def calcular_tendencia_porcentaje(sub):
+    if len(sub) < 2:
+        return 0.0
+    primera = float(sub.iloc[0]["total_vendido"])
+    ultima = float(sub.iloc[-1]["total_vendido"])
+    if primera == 0:
+        return 0.0
+    return round(((ultima - primera) / primera) * 100, 2)
+
+
+def calcular_riesgo(stock_actual, punto_pedido, cantidad_predicha):
+    stock = int(stock_actual or 0)
+    punto = int(punto_pedido or 0)
+    prediccion = int(cantidad_predicha or 0)
+    if prediccion > stock:
+        return "ALTO"
+    if stock - prediccion <= max(1, punto // 2):
+        return "MEDIO"
+    return "BAJO"
+
+
 def entrenar_prediccion_producto(sub):
     """Entrena regresion lineal para un producto y retorna semana futura, cantidad y confianza."""
     if len(sub) < 2:
@@ -62,7 +83,19 @@ def entrenar_prediccion_producto(sub):
     cantidad = max(0, int(round(pred)))
     confianza = normalizar_confianza(modelo.score(X, y))
 
-    return semana_futura, cantidad, confianza
+    tendencia = calcular_tendencia_porcentaje(sub)
+
+    return semana_futura, cantidad, confianza, tendencia
+
+
+def obtener_metadata_producto(df, producto_id):
+    fila = df[df["productoId"] == producto_id].iloc[0]
+    return {
+        "sku": fila.get("sku", ""),
+        "categoria": fila.get("categoriaNombre", "Sin categoria"),
+        "stockActual": int(fila.get("stockActual", 0) or 0),
+        "puntoPedido": int(fila.get("puntoPedido", 0) or 0),
+    }
 
 @st.cache_data(ttl=60)
 def cargar_datos():
@@ -133,7 +166,9 @@ def main():
             st.info(f"⏭ {nombre}: datos insuficientes ({len(sub)} semana(s))")
             continue
 
-        semana_futura, cant, confianza = resultado
+        semana_futura, cant, confianza, tendencia = resultado
+        meta = obtener_metadata_producto(df, pid)
+        riesgo = calcular_riesgo(meta["stockActual"], meta["puntoPedido"], cant)
 
         st.subheader(f"📦 {nombre}", divider="gray")
 
@@ -153,8 +188,12 @@ def main():
             value=f"{cant} unidades",
             delta=f"R² = {confianza:.2f}",
         )
-        c2.metric(label="Semanas analizadas", value=len(sub))
-        st.caption(f"Modelo: LinearRegression | Semanas historicas: {len(sub)}")
+        c2.metric(label="Riesgo de quiebre", value=riesgo, delta=f"Tendencia {tendencia:+.1f}%")
+        st.caption(
+            f"SKU: {meta['sku']} | Categoria: {meta['categoria']} | "
+            f"Stock actual: {meta['stockActual']} | Punto de pedido: {meta['puntoPedido']} | "
+            f"Modelo: LinearRegression | Semanas historicas: {len(sub)}"
+        )
 
         if guardar_prediccion(conn, pid, nombre, semana_futura, cant, confianza):
             total_predichos += 1

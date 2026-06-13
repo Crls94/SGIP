@@ -12,6 +12,12 @@ public class PrediccionResponseDTO {
     private UUID id;
     private UUID productoId;
     private String productoNombre;
+    private String sku;
+    private String categoriaNombre;
+    private Integer stockActual;
+    private Integer puntoPedido;
+    private Integer diferenciaStockPrediccion;
+    private String riesgo;
     private LocalDate semanaInicio;
     private LocalDate semanaFin;
     private Integer cantidadPredicha;
