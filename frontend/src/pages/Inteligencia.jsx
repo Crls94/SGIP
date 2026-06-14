@@ -202,9 +202,9 @@ export default function Inteligencia() {
       <div className="page-header">
         <div>
           <h1>IA Predictiva - Pronostico</h1>
-          <span className="caption">Analisis historico, prediccion semanal y riesgo de quiebre</span>
+          <span className="caption">Consulta la demanda estimada y el riesgo de quiebre por producto</span>
         </div>
-        <span className="micro">Modelo LinearRegression</span>
+        <span className="micro">Analisis predictivo</span>
       </div>
 
       <div className="card mb-24">
@@ -242,13 +242,13 @@ export default function Inteligencia() {
           {historicoVacio && (
             <div className="empty-state" style={{ padding: 18, marginTop: 10 }}>
               <strong>Sin historico para los filtros seleccionados.</strong>
-              <p className="caption mt-8">Usa productos demo IA, amplia el rango de fechas o limpia los filtros. La IA aprende de movimientos SALIDA.</p>
+              <p className="caption mt-8">Seleccione otro producto, cambie el rango de fechas o limpie los filtros.</p>
             </div>
           )}
           {!historicoVacio && prediccionesVacias && (
             <div className="empty-state" style={{ padding: 18, marginTop: 10 }}>
-              <strong>Hay historico, pero no hay predicciones guardadas para esta seleccion.</strong>
-              <p className="caption mt-8">Ejecuta <code>streamlit run ia_prediccion.py</code> y vuelve a aplicar filtros.</p>
+              <strong>Aun no hay una prediccion disponible para esta seleccion.</strong>
+              <p className="caption mt-8">Actualice el pronostico o intente nuevamente mas tarde.</p>
             </div>
           )}
         </div>
@@ -257,7 +257,7 @@ export default function Inteligencia() {
           <Metric title="Demanda Predicha" value={demandaTotal} suffix="unidades" tone="info" />
           <Metric title="Confianza Promedio" value={`${confianzaPromedio}%`} suffix="modelo IA" tone="success" />
           <Metric title="Riesgo Alto" value={riesgoAlto} suffix="productos" tone="danger" />
-          <Metric title="Historico Analizado" value={entrenamiento.length} suffix="salidas" tone="neutral" />
+          <Metric title="Registros Analizados" value={entrenamiento.length} suffix="registros" tone="neutral" />
         </div>
       </div>
 
