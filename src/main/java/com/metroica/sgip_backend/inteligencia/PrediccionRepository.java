@@ -12,7 +12,12 @@ import java.util.UUID;
 @Repository
 public interface PrediccionRepository extends JpaRepository<PrediccionDemanda, UUID> {
 
-    @Query("SELECT p FROM PrediccionDemanda p JOIN FETCH p.producto ORDER BY p.semanaInicio DESC")
+    @Query("""
+            SELECT p FROM PrediccionDemanda p
+            JOIN FETCH p.producto
+            WHERE p.semanaInicio = (SELECT MAX(pd.semanaInicio) FROM PrediccionDemanda pd)
+            ORDER BY p.producto.nombre ASC
+            """)
     List<PrediccionDemanda> findUltimasPredicciones();
 
     @EntityGraph(attributePaths = "producto")

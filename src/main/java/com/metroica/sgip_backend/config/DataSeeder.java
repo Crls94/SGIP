@@ -16,10 +16,13 @@ import com.metroica.sgip_backend.shared.enums.TipoMovimiento;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-@Profile("dev")
+@Profile({"dev", "demo"})
 @RequiredArgsConstructor
 public class DataSeeder implements CommandLineRunner {
 
@@ -41,6 +44,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ProveedorRepository proveedorRepository;
     private final ProductoRepository productoRepository;
     private final MovimientoRepository movimientoRepository;
+    private final Environment environment;
 
     @Override
     public void run(String... args) {
@@ -93,16 +97,12 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("=== USUARIOS DE DESARROLLO CREADOS ===");
         }
 
-        cargarDemoIa();
+        if (environment.acceptsProfiles(Profiles.of("demo"))) {
+            cargarDemoIa();
+        }
     }
 
     private void cargarDemoIa() {
-        boolean demoExistente = movimientoRepository.findAll().stream()
-                .anyMatch(m -> DEMO_REF.equals(m.getReferencia()));
-        if (demoExistente) {
-            return;
-        }
-
         Usuario admin = usuarioRepository.findByEmail("admin@metroica.com")
                 .orElseGet(() -> usuarioRepository.findAll().stream().findFirst().orElse(null));
         if (admin == null) {
@@ -115,8 +115,8 @@ public class DataSeeder implements CommandLineRunner {
                 new ProductoDemo("IA-ARROZ-001", "Arroz Extra Costeño 5kg", "Abarrotes", 4, 4, 18, 34),
                 new ProductoDemo("IA-ACEITE-001", "Aceite Vegetal Metro 1L", "Abarrotes", 5, 3, 22, 28),
                 new ProductoDemo("IA-AZUCAR-001", "Azucar Rubia 1kg", "Abarrotes", 3, 2, 16, 26),
-                new ProductoDemo("IA-LECHE-001", "Leche Evaporada Six Pack", "Lacteos", 5, 5, 24, 30),
-                new ProductoDemo("IA-YOGURT-001", "Yogurt Familiar Fresa 1L", "Lacteos", 2, 5, 14, 18),
+                new ProductoDemo("IA-LECHE-001", "Leche Evaporada Six Pack", "Lácteos", 5, 5, 24, 30),
+                new ProductoDemo("IA-YOGURT-001", "Yogurt Familiar Fresa 1L", "Lácteos", 2, 5, 14, 18),
                 new ProductoDemo("IA-GASEOSA-001", "Gaseosa Cola 3L", "Bebidas", 7, 4, 30, 42),
                 new ProductoDemo("IA-AGUA-001", "Agua Mineral 2.5L", "Bebidas", 6, 3, 26, 36),
                 new ProductoDemo("IA-DETERGENTE-001", "Detergente Bolsa 4kg", "Limpieza", 2, 1, 12, 16),
@@ -128,8 +128,15 @@ public class DataSeeder implements CommandLineRunner {
 
         for (ProductoDemo demo : demos) {
             Producto producto = productoRepository.findBySku(demo.sku())
+                    .map(p -> actualizarProductoDemo(p, demo, categorias.get(demo.categoria()), proveedor))
                     .orElseGet(() -> crearProductoDemo(demo, categorias.get(demo.categoria()), proveedor));
-            crearMovimientosHistoricos(producto, admin, demo);
+            boolean tieneMovimientosDemo = movimientoRepository.findAll().stream()
+                    .anyMatch(m -> DEMO_REF.equals(m.getReferencia())
+                            && m.getProducto() != null
+                            && producto.getId().equals(m.getProducto().getId()));
+            if (!tieneMovimientosDemo) {
+                crearMovimientosHistoricos(producto, admin, demo);
+            }
         }
 
         System.out.println("=== DATA DEMO IA V4 CREADA ===");
@@ -137,9 +144,9 @@ public class DataSeeder implements CommandLineRunner {
 
     private Map<String, Categoria> crearCategoriasDemo() {
         Map<String, Categoria> result = new HashMap<>();
-        for (String nombre : List.of("Abarrotes", "Lacteos", "Bebidas", "Limpieza", "Cuidado Personal", "Snacks")) {
+        for (String nombre : List.of("Abarrotes", "Lácteos", "Bebidas", "Limpieza", "Cuidado Personal", "Snacks")) {
             Optional<Categoria> existente = categoriaRepository.findAll().stream()
-                    .filter(c -> nombre.equalsIgnoreCase(c.getNombre()))
+                    .filter(c -> normalizar(nombre).equals(normalizar(c.getNombre())))
                     .findFirst();
             Categoria categoria = existente.orElseGet(() -> {
                 Categoria c = new Categoria();
@@ -148,6 +155,11 @@ public class DataSeeder implements CommandLineRunner {
                 c.setActiva(true);
                 return categoriaRepository.save(c);
             });
+            if (!nombre.equals(categoria.getNombre())) {
+                categoria.setNombre(nombre);
+                categoria.setActiva(true);
+                categoria = categoriaRepository.save(categoria);
+            }
             result.put(nombre, categoria);
         }
         return result;
@@ -174,6 +186,23 @@ public class DataSeeder implements CommandLineRunner {
         Producto producto = new Producto();
         producto.setSku(demo.sku());
         producto.setCodigoBarras("780" + Math.abs(demo.sku().hashCode()));
+        producto.setNombre(demo.nombre());
+        producto.setDescripcion("Producto demo para graficas y prediccion IA");
+        producto.setMarca("Metro Demo");
+        producto.setUnidadMedida("UNIDAD");
+        producto.setCategoria(categoria);
+        producto.setProveedor(proveedor);
+        producto.setPrecioCosto(BigDecimal.valueOf(5 + demo.base()));
+        producto.setPrecioVenta(BigDecimal.valueOf(8 + demo.base() * 1.8));
+        producto.setStockActual(demo.stockActual());
+        producto.setStockMinimo(Math.max(3, demo.puntoPedido() / 2));
+        producto.setStockMaximo(500);
+        producto.setPuntoPedido(demo.puntoPedido());
+        producto.setEstado(EstadoProducto.ACTIVO);
+        return productoRepository.save(producto);
+    }
+
+    private Producto actualizarProductoDemo(Producto producto, ProductoDemo demo, Categoria categoria, Proveedor proveedor) {
         producto.setNombre(demo.nombre());
         producto.setDescripcion("Producto demo para graficas y prediccion IA");
         producto.setMarca("Metro Demo");
@@ -225,5 +254,11 @@ public class DataSeeder implements CommandLineRunner {
 
     private record ProductoDemo(String sku, String nombre, String categoria, int base, int pico,
                                 int stockActual, int puntoPedido) {
+    }
+
+    private String normalizar(String value) {
+        return Normalizer.normalize(value == null ? "" : value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase();
     }
 }
