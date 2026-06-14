@@ -26,6 +26,16 @@ export default function Inteligencia() {
   const [fechaDesde, setFechaDesde] = useState(weeksAgoDate(20));
   const [fechaHasta, setFechaHasta] = useState(new Date().toISOString().slice(0, 10));
   const [periodo, setPeriodo] = useState('20');
+  const [loading, setLoading] = useState(false);
+
+  const cargarPredicciones = async () => {
+    try {
+      const { data } = await api.get('/inteligencia/predicciones');
+      setPredicciones(data || []);
+    } catch {
+      toast('No se pudo cargar predicciones', 'error');
+    }
+  };
 
   const cargarEntrenamiento = async (override = {}) => {
     const params = new URLSearchParams();
@@ -47,7 +57,7 @@ export default function Inteligencia() {
   };
 
   useEffect(() => {
-    api.get('/inteligencia/predicciones').then((r) => setPredicciones(r.data || [])).catch(() => toast('No se pudo cargar predicciones', 'error'));
+    cargarPredicciones();
     api.get('/productos?size=500').then((r) => setProductos(r.data?.content || [])).catch(() => {});
     cargarEntrenamiento();
   }, []);
@@ -158,10 +168,34 @@ export default function Inteligencia() {
     setPeriodo(weeks);
     setFechaDesde(nextDesde);
     setFechaHasta(nextHasta);
-    cargarEntrenamiento({ fechaDesde: nextDesde, fechaHasta: nextHasta });
+    aplicarFiltros({ fechaDesde: nextDesde, fechaHasta: nextHasta });
   };
 
-  const aplicarFiltros = () => cargarEntrenamiento();
+  const aplicarFiltros = async (override = {}) => {
+    setLoading(true);
+    await Promise.all([cargarEntrenamiento(override), cargarPredicciones()]);
+    setLoading(false);
+  };
+
+  const limpiarFiltros = () => {
+    const nextDesde = weeksAgoDate(20);
+    const nextHasta = new Date().toISOString().slice(0, 10);
+    setProductoId('');
+    setCategoria('');
+    setPeriodo('20');
+    setFechaDesde(nextDesde);
+    setFechaHasta(nextHasta);
+    aplicarFiltros({ productoId: '', categoria: '', fechaDesde: nextDesde, fechaHasta: nextHasta });
+  };
+
+  const cambiarCategoria = (nextCategoria) => {
+    setCategoria(nextCategoria);
+    setProductoId('');
+  };
+
+  const selectedProduct = productoMap.get(String(productoId));
+  const historicoVacio = !loading && entrenamiento.length === 0;
+  const prediccionesVacias = !loading && prediccionesFiltradas.length === 0;
 
   return (
     <div>
@@ -185,7 +219,7 @@ export default function Inteligencia() {
               renderOption={(p) => <div><strong>{p.nombre}</strong><div className="micro">{p.sku} · {p.categoriaNombre}</div></div>}
             />
           </div>
-          <select className="form-input" value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ maxWidth: 190 }}>
+          <select className="form-input" value={categoria} onChange={(e) => cambiarCategoria(e.target.value)} style={{ maxWidth: 190 }}>
             <option value="">Todas las categorias</option>
             {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -197,7 +231,26 @@ export default function Inteligencia() {
             <option value="12">12 semanas</option>
             <option value="20">20 semanas</option>
           </select>
-          <button type="button" className="btn btn-primary" onClick={aplicarFiltros}>Aplicar filtros</button>
+          <button type="button" className="btn btn-primary" onClick={() => aplicarFiltros()} disabled={loading}>{loading ? 'Actualizando...' : 'Aplicar filtros'}</button>
+          <button type="button" className="btn btn-outline" onClick={limpiarFiltros}>Limpiar</button>
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          {selectedProduct && (
+            <p className="caption">Producto seleccionado: <strong>{selectedProduct.nombre}</strong> · {selectedProduct.sku} · {selectedProduct.categoriaNombre}</p>
+          )}
+          {historicoVacio && (
+            <div className="empty-state" style={{ padding: 18, marginTop: 10 }}>
+              <strong>Sin historico para los filtros seleccionados.</strong>
+              <p className="caption mt-8">Usa productos demo IA, amplia el rango de fechas o limpia los filtros. La IA aprende de movimientos SALIDA.</p>
+            </div>
+          )}
+          {!historicoVacio && prediccionesVacias && (
+            <div className="empty-state" style={{ padding: 18, marginTop: 10 }}>
+              <strong>Hay historico, pero no hay predicciones guardadas para esta seleccion.</strong>
+              <p className="caption mt-8">Ejecuta <code>streamlit run ia_prediccion.py</code> y vuelve a aplicar filtros.</p>
+            </div>
+          )}
         </div>
 
         <div className="wire-card-grid mt-16">
