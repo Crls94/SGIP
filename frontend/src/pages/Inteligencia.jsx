@@ -26,6 +26,7 @@ export default function Inteligencia() {
   const [fechaDesde, setFechaDesde] = useState(weeksAgoDate(20));
   const [fechaHasta, setFechaHasta] = useState(new Date().toISOString().slice(0, 10));
   const [periodo, setPeriodo] = useState('20');
+  const [filtroRiesgo, setFiltroRiesgo] = useState('');
   const [loading, setLoading] = useState(false);
 
   const cargarPredicciones = async () => {
@@ -82,19 +83,28 @@ export default function Inteligencia() {
         const producto = productoMap.get(String(p.productoId));
         const stockActual = p.stockActual ?? producto?.stockActual ?? 0;
         const puntoPedido = p.puntoPedido ?? producto?.puntoPedido ?? 0;
-        const diferencia = stockActual - (p.cantidadPredicha || 0);
-        const riesgo = p.riesgo || calcularRiesgo(stockActual, puntoPedido, p.cantidadPredicha || 0);
+        const demanda = p.cantidadPredicha || 0;
+        const riesgo = p.riesgo || calcularRiesgo(stockActual, puntoPedido, demanda);
+        const faltanteEstimado = Math.max(0, demanda - stockActual);
+        const disponibleEstimado = Math.max(0, stockActual - demanda);
         return {
           ...p,
           sku: p.sku || producto?.sku,
           categoriaNombre: p.categoriaNombre || producto?.categoriaNombre || 'Sin categoria',
           stockActual,
           puntoPedido,
-          diferenciaStockPrediccion: p.diferenciaStockPrediccion ?? diferencia,
+          faltanteEstimado,
+          disponibleEstimado,
+          accionSugerida: obtenerAccionSugerida(riesgo, faltanteEstimado, stockActual),
           riesgo,
         };
+      })
+      .filter((p) => {
+        if (!filtroRiesgo) return true;
+        if (filtroRiesgo === 'CON_FALTANTE') return p.faltanteEstimado > 0;
+        return p.riesgo === filtroRiesgo;
       });
-  }, [predicciones, productoId, categoria, productoMap]);
+  }, [predicciones, productoId, categoria, productoMap, filtroRiesgo]);
 
   const tendencia = useMemo(() => {
     const weekly = {};
@@ -161,6 +171,31 @@ export default function Inteligencia() {
     : 0;
   const demandaTotal = prediccionesFiltradas.reduce((acc, p) => acc + (p.cantidadPredicha || 0), 0);
   const riesgoAlto = prediccionesFiltradas.filter((p) => p.riesgo === 'ALTO').length;
+  const faltanteTotal = prediccionesFiltradas.reduce((acc, p) => acc + (p.faltanteEstimado || 0), 0);
+  const sinStock = prediccionesFiltradas.filter((p) => (p.stockActual || 0) <= 0).length;
+  const recomendacionesReposicion = useMemo(() => {
+    return [...prediccionesFiltradas]
+      .filter((p) => p.riesgo === 'ALTO' || p.riesgo === 'MEDIO' || p.faltanteEstimado > 0)
+      .sort((a, b) => {
+        const prioridad = { ALTO: 0, MEDIO: 1, BAJO: 2 };
+        return (prioridad[a.riesgo] - prioridad[b.riesgo]) || ((b.faltanteEstimado || 0) - (a.faltanteEstimado || 0));
+      })
+      .slice(0, 10);
+  }, [prediccionesFiltradas]);
+
+  const categoriasCriticas = useMemo(() => {
+    const grouped = {};
+    prediccionesFiltradas.forEach((p) => {
+      const key = p.categoriaNombre || 'Sin categoria';
+      if (!grouped[key]) grouped[key] = { name: key, productos: 0, faltante: 0 };
+      if (p.riesgo === 'ALTO' || p.riesgo === 'MEDIO') grouped[key].productos += 1;
+      grouped[key].faltante += p.faltanteEstimado || 0;
+    });
+    return Object.values(grouped)
+      .filter((c) => c.productos > 0 || c.faltante > 0)
+      .sort((a, b) => b.faltante - a.faltante || b.productos - a.productos)
+      .slice(0, 8);
+  }, [prediccionesFiltradas]);
 
   const aplicarPeriodo = (weeks) => {
     const nextDesde = weeksAgoDate(Number(weeks));
@@ -182,6 +217,7 @@ export default function Inteligencia() {
     const nextHasta = new Date().toISOString().slice(0, 10);
     setProductoId('');
     setCategoria('');
+    setFiltroRiesgo('');
     setPeriodo('20');
     setFechaDesde(nextDesde);
     setFechaHasta(nextHasta);
@@ -231,6 +267,13 @@ export default function Inteligencia() {
             <option value="12">12 semanas</option>
             <option value="20">20 semanas</option>
           </select>
+          <select className="form-input" value={filtroRiesgo} onChange={(e) => setFiltroRiesgo(e.target.value)} style={{ maxWidth: 160 }}>
+            <option value="">Todo riesgo</option>
+            <option value="ALTO">Riesgo alto</option>
+            <option value="MEDIO">Riesgo medio</option>
+            <option value="BAJO">Riesgo bajo</option>
+            <option value="CON_FALTANTE">Solo con faltante</option>
+          </select>
           <button type="button" className="btn btn-primary" onClick={() => aplicarFiltros()} disabled={loading}>{loading ? 'Actualizando...' : 'Aplicar filtros'}</button>
           <button type="button" className="btn btn-outline" onClick={limpiarFiltros}>Limpiar</button>
         </div>
@@ -257,8 +300,52 @@ export default function Inteligencia() {
           <Metric title="Demanda Predicha" value={demandaTotal} suffix="unidades" tone="info" />
           <Metric title="Confianza Promedio" value={`${confianzaPromedio}%`} suffix="modelo IA" tone="success" />
           <Metric title="Riesgo Alto" value={riesgoAlto} suffix="productos" tone="danger" />
+          <Metric title="Faltante Estimado" value={faltanteTotal} suffix="unidades" tone="danger" />
+          <Metric title="Sin Stock" value={sinStock} suffix="productos" tone="danger" />
           <Metric title="Registros Analizados" value={entrenamiento.length} suffix="registros" tone="neutral" />
         </div>
+      </div>
+
+      <div className="dashboard-charts" style={{ marginBottom: 16 }}>
+        <div className="card" style={{ padding: 20 }}>
+          <h3 style={{ marginBottom: 10 }}>Recomendaciones de reposicion</h3>
+          <p className="caption" style={{ marginTop: -4, marginBottom: 12 }}>Productos que requieren revision por riesgo de quiebre o faltante estimado.</p>
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr><th>Producto</th><th>Categoria</th><th>Stock</th><th>Demanda</th><th>Faltante</th><th>Disponible estimado</th><th>Riesgo</th><th>Accion</th></tr>
+              </thead>
+              <tbody>
+                {recomendacionesReposicion.length === 0 ? (
+                  <tr><td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-tertiary)' }}>No hay productos con reposicion prioritaria para esta seleccion.</td></tr>
+                ) : recomendacionesReposicion.map((p) => (
+                  <tr key={p.id}>
+                    <td><strong>{p.productoNombre}</strong><div className="micro">{p.sku}</div></td>
+                    <td>{p.categoriaNombre}</td>
+                    <td>{p.stockActual}</td>
+                    <td>{p.cantidadPredicha}</td>
+                    <td>{p.faltanteEstimado}</td>
+                    <td>{p.disponibleEstimado}</td>
+                    <td><RiskBadge riesgo={p.riesgo} /></td>
+                    <td><strong>{p.accionSugerida}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <ChartPanel title="Categorias criticas" subtitle="Faltante estimado acumulado por categoria">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={categoriasCriticas} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" horizontal={false} />
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Bar dataKey="faltante" name="Faltante estimado" fill="#E53935" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartPanel>
       </div>
 
       <div className="dashboard-charts">
@@ -362,7 +449,7 @@ export default function Inteligencia() {
           <div className="table-wrapper">
             <table className="table">
               <thead>
-                <tr><th>Producto</th><th>Categoria</th><th>Stock</th><th>Punto</th><th>Demanda</th><th>Diferencia</th><th>Riesgo</th><th>Confianza</th></tr>
+                <tr><th>Producto</th><th>Categoria</th><th>Stock</th><th>Punto</th><th>Demanda</th><th>Faltante</th><th>Disponible</th><th>Riesgo</th><th>Accion</th><th>Confianza</th></tr>
               </thead>
               <tbody>
                 {prediccionesFiltradas.slice(0, 12).map((p) => (
@@ -372,8 +459,10 @@ export default function Inteligencia() {
                     <td>{p.stockActual}</td>
                     <td>{p.puntoPedido}</td>
                     <td>{p.cantidadPredicha}</td>
-                    <td>{p.diferenciaStockPrediccion}</td>
-                    <td><span className={`badge ${p.riesgo === 'ALTO' ? 'badge-danger' : p.riesgo === 'MEDIO' ? 'badge-warning' : 'badge-success'}`}>{p.riesgo}</span></td>
+                    <td>{p.faltanteEstimado}</td>
+                    <td>{p.disponibleEstimado}</td>
+                    <td><RiskBadge riesgo={p.riesgo} /></td>
+                    <td>{p.accionSugerida}</td>
                     <td>{Math.round(Number(p.confianza || 0) * 100)}%</td>
                   </tr>
                 ))}
@@ -390,6 +479,17 @@ function calcularRiesgo(stockActual, puntoPedido, demanda) {
   if (demanda > stockActual) return 'ALTO';
   if (stockActual - demanda <= Math.max(1, Math.floor((puntoPedido || 0) / 2))) return 'MEDIO';
   return 'BAJO';
+}
+
+function obtenerAccionSugerida(riesgo, faltanteEstimado, stockActual) {
+  if (faltanteEstimado > 0 || stockActual <= 0 || riesgo === 'ALTO') return 'Reponer';
+  if (riesgo === 'MEDIO') return 'Revisar';
+  return 'Mantener';
+}
+
+function RiskBadge({ riesgo }) {
+  const className = riesgo === 'ALTO' ? 'badge-danger' : riesgo === 'MEDIO' ? 'badge-warning' : 'badge-success';
+  return <span className={`badge ${className}`}>{riesgo}</span>;
 }
 
 function acortar(text = '', max = 18) {
