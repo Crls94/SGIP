@@ -72,7 +72,7 @@ export default function Alertas() {
             <div key={a.id} className="card" style={{ borderLeft: `4px solid var(--color-danger)` }}>
               <div className="card-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFEBEE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#E53935' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: a.origen === 'IA_PREDICTIVA' ? '#FFF8E1' : '#FFEBEE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: a.origen === 'IA_PREDICTIVA' ? '#FF8F00' : '#E53935' }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
                   </div>
                   <div>
@@ -80,12 +80,32 @@ export default function Alertas() {
                     <span className="micro" style={{ color: 'var(--text-tertiary)' }}>{new Date(a.fechaGenerada).toLocaleString()}</span>
                   </div>
                 </div>
+                <span className={`badge ${a.origen === 'IA_PREDICTIVA' ? 'badge-warning' : 'badge-danger'}`}>
+                  {a.origen === 'IA_PREDICTIVA' ? 'IA predictiva' : 'Stock real'}
+                </span>
               </div>
+              {a.mensaje && <p className="caption" style={{ marginBottom: 10 }}>{a.mensaje}</p>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div className="stat-row">
                   <span className="stat-label">Stock actual</span>
                   <span className="badge badge-danger">{a.stockAlGenerar}</span>
                 </div>
+                {a.origen === 'IA_PREDICTIVA' && (
+                  <>
+                    <div className="stat-row">
+                      <span className="stat-label">Demanda estimada</span>
+                      <strong className="stat-value">{a.cantidadPredicha ?? 0}</strong>
+                    </div>
+                    <div className="stat-row">
+                      <span className="stat-label">Faltante estimado</span>
+                      <span className="badge badge-warning">{a.faltanteEstimado ?? 0}</span>
+                    </div>
+                    <div className="stat-row">
+                      <span className="stat-label">Semana estimada</span>
+                      <strong className="stat-value">{formatDate(a.semanaInicio)} - {formatDate(a.semanaFin)}</strong>
+                    </div>
+                  </>
+                )}
                 <div className="stat-row">
                   <span className="stat-label">Punto de pedido</span>
                   <strong className="stat-value">{a.puntoPedidoReferencia}</strong>
@@ -111,4 +131,9 @@ export default function Alertas() {
       )}
     </div>
   );
+}
+
+function formatDate(value) {
+  if (!value) return '--';
+  return new Date(`${value}T00:00:00`).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
 }

@@ -28,6 +28,7 @@ export default function Inteligencia() {
   const [periodo, setPeriodo] = useState('20');
   const [filtroRiesgo, setFiltroRiesgo] = useState('');
   const [loading, setLoading] = useState(false);
+  const [generandoAlertas, setGenerandoAlertas] = useState(false);
 
   const cargarPredicciones = async () => {
     try {
@@ -224,6 +225,19 @@ export default function Inteligencia() {
     aplicarFiltros({ productoId: '', categoria: '', fechaDesde: nextDesde, fechaHasta: nextHasta });
   };
 
+  const generarAlertasPredictivas = async () => {
+    setGenerandoAlertas(true);
+    try {
+      const { data } = await api.post('/inteligencia/alertas-predictivas/generar');
+      const total = data?.length || 0;
+      toast(total > 0 ? `${total} alerta(s) predictiva(s) generada(s)` : 'No hay nuevas alertas predictivas por generar', 'success');
+    } catch (err) {
+      toast(err.response?.data?.error || 'No se pudieron generar alertas predictivas', 'error');
+    } finally {
+      setGenerandoAlertas(false);
+    }
+  };
+
   const cambiarCategoria = (nextCategoria) => {
     setCategoria(nextCategoria);
     setProductoId('');
@@ -275,6 +289,9 @@ export default function Inteligencia() {
             <option value="CON_FALTANTE">Solo con faltante</option>
           </select>
           <button type="button" className="btn btn-primary" onClick={() => aplicarFiltros()} disabled={loading}>{loading ? 'Actualizando...' : 'Aplicar filtros'}</button>
+          <button type="button" className="btn btn-accent" onClick={generarAlertasPredictivas} disabled={generandoAlertas || prediccionesFiltradas.length === 0}>
+            {generandoAlertas ? 'Generando...' : 'Generar alertas IA'}
+          </button>
           <button type="button" className="btn btn-outline" onClick={limpiarFiltros}>Limpiar</button>
         </div>
 

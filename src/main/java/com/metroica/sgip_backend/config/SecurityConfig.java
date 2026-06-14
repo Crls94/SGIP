@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/pedidos/**").hasAnyRole("ADMINISTRADOR", "OPERARIO")
                         .requestMatchers(HttpMethod.GET, "/api/v1/alertas/**").hasAnyRole("ADMINISTRADOR", "OPERARIO", "GERENTE")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/alertas/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/inteligencia/alertas-predictivas/generar").hasAnyRole("ADMINISTRADOR", "GERENTE")
                         .requestMatchers("/api/v1/inteligencia/predicciones").hasAnyRole("ADMINISTRADOR", "GERENTE")
                         .requestMatchers("/api/v1/reportes/**").hasAnyRole("ADMINISTRADOR", "GERENTE")
                         .requestMatchers("/api/v1/notificaciones/**").hasAnyRole("ADMINISTRADOR", "OPERARIO", "GERENTE")

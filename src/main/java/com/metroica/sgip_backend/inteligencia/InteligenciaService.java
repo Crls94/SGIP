@@ -1,6 +1,16 @@
 package com.metroica.sgip_backend.inteligencia;
 
+import com.metroica.sgip_backend.alertas.AlertaStock;
+import com.metroica.sgip_backend.alertas.AlertaStockMapper;
+import com.metroica.sgip_backend.alertas.AlertaStockRepository;
+import com.metroica.sgip_backend.alertas.AlertaStockResponseDTO;
 import com.metroica.sgip_backend.movimientos.MovimientoRepository;
+import com.metroica.sgip_backend.notificaciones.NotificacionService;
+import com.metroica.sgip_backend.productos.Producto;
+import com.metroica.sgip_backend.seguridad.Usuario;
+import com.metroica.sgip_backend.seguridad.UsuarioRepository;
+import com.metroica.sgip_backend.shared.enums.EstadoAlerta;
+import com.metroica.sgip_backend.shared.enums.RolUsuario;
 import com.metroica.sgip_backend.shared.enums.TipoMovimiento;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +33,10 @@ public class InteligenciaService {
     private final MovimientoRepository movimientoRepository;
     private final MovimientoExportMapper mapper;
     private final PrediccionRepository prediccionRepository;
+    private final AlertaStockRepository alertaStockRepository;
+    private final AlertaStockMapper alertaStockMapper;
+    private final NotificacionService notificacionService;
+    private final UsuarioRepository usuarioRepository;
 
     @Transactional(readOnly = true)
     public List<MovimientoExportDTO> extraerDatosEntrenamiento() {
@@ -50,6 +64,17 @@ public class InteligenciaService {
     @Transactional(readOnly = true)
     public PrediccionDemanda obtenerUltimaPrediccion() {
         return prediccionRepository.findFirstByOrderByGeneradoEnDesc().orElse(null);
+    }
+
+    @Transactional
+    public List<AlertaStockResponseDTO> generarAlertasPredictivas() {
+        return prediccionRepository.findUltimasPredicciones()
+                .stream()
+                .filter(this::requiereAlertaPredictiva)
+                .filter(this::noTieneAlertaPredictivaActiva)
+                .map(this::crearAlertaPredictiva)
+                .map(alertaStockMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     private PrediccionResponseDTO toDTO(PrediccionDemanda p) {
@@ -107,5 +132,60 @@ public class InteligenciaService {
             return "MEDIO";
         }
         return "BAJO";
+    }
+
+    private boolean requiereAlertaPredictiva(PrediccionDemanda prediccion) {
+        Producto producto = prediccion.getProducto();
+        if (producto == null || producto.getStockActual() == null || prediccion.getCantidadPredicha() == null) {
+            return false;
+        }
+        String riesgo = calcularRiesgo(producto.getStockActual(), producto.getPuntoPedido(), prediccion.getCantidadPredicha());
+        return "ALTO".equals(riesgo) || "MEDIO".equals(riesgo);
+    }
+
+    private boolean noTieneAlertaPredictivaActiva(PrediccionDemanda prediccion) {
+        return !alertaStockRepository.existsByProductoAndEstadoAndOrigenAndSemanaInicio(
+                prediccion.getProducto(), EstadoAlerta.ACTIVA, "IA_PREDICTIVA", prediccion.getSemanaInicio());
+    }
+
+    private AlertaStock crearAlertaPredictiva(PrediccionDemanda prediccion) {
+        Producto producto = prediccion.getProducto();
+        int stockActual = producto.getStockActual() == null ? 0 : producto.getStockActual();
+        int demanda = prediccion.getCantidadPredicha() == null ? 0 : prediccion.getCantidadPredicha();
+        int faltante = Math.max(0, demanda - stockActual);
+
+        AlertaStock alerta = new AlertaStock();
+        alerta.setProducto(producto);
+        alerta.setStockAlGenerar(stockActual);
+        alerta.setPuntoPedidoReferencia(producto.getPuntoPedido());
+        alerta.setOrigen("IA_PREDICTIVA");
+        alerta.setPrediccion(prediccion);
+        alerta.setCantidadPredicha(demanda);
+        alerta.setFaltanteEstimado(faltante);
+        alerta.setSemanaInicio(prediccion.getSemanaInicio());
+        alerta.setSemanaFin(prediccion.getSemanaFin());
+        alerta.setEstado(EstadoAlerta.ACTIVA);
+        alerta.setMensaje(crearMensajePredictivo(producto, demanda, faltante, stockActual));
+
+        AlertaStock guardada = alertaStockRepository.save(alerta);
+        notificarRiesgoPredictivo(producto, guardada.getMensaje());
+        return guardada;
+    }
+
+    private String crearMensajePredictivo(Producto producto, int demanda, int faltante, int stockActual) {
+        if (faltante > 0) {
+            return String.format("La IA estima una demanda de %d unidades para %s. Stock actual: %d. Faltante estimado: %d.",
+                    demanda, producto.getNombre(), stockActual, faltante);
+        }
+        return String.format("La IA estima una demanda de %d unidades para %s y el stock quedaria cerca del punto de pedido.",
+                demanda, producto.getNombre());
+    }
+
+    private void notificarRiesgoPredictivo(Producto producto, String mensaje) {
+        String titulo = "Riesgo predictivo de stock: " + producto.getNombre();
+        List<Usuario> admins = usuarioRepository.findByRolAndActivoTrue(RolUsuario.ADMINISTRADOR);
+        for (Usuario admin : admins) {
+            notificacionService.crearNotificacion(admin.getId(), titulo, mensaje, "ALERTA_IA", admin.getEmail());
+        }
     }
 }

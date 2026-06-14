@@ -1,6 +1,7 @@
 package com.metroica.sgip_backend.alertas;
 
 import com.metroica.sgip_backend.shared.enums.EstadoAlerta;
+import com.metroica.sgip_backend.inteligencia.PrediccionDemanda;
 import com.metroica.sgip_backend.productos.Producto;
 import com.metroica.sgip_backend.seguridad.Usuario;
 import jakarta.persistence.*;
@@ -8,6 +9,7 @@ import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -29,6 +31,28 @@ public class AlertaStock {
 
     @Column(name = "punto_pedido_ref", nullable = false)
     private Integer puntoPedidoReferencia;
+
+    @Column(nullable = false, length = 30)
+    private String origen = "STOCK_REAL";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "prediccion_id")
+    private PrediccionDemanda prediccion;
+
+    @Column(name = "cantidad_predicha")
+    private Integer cantidadPredicha;
+
+    @Column(name = "faltante_estimado")
+    private Integer faltanteEstimado;
+
+    @Column(name = "semana_inicio")
+    private LocalDate semanaInicio;
+
+    @Column(name = "semana_fin")
+    private LocalDate semanaFin;
+
+    @Column(length = 500)
+    private String mensaje;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

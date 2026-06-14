@@ -13,6 +13,12 @@ public class AlertaStockMapper {
         dto.setProductoNombre(alerta.getProducto() != null ? alerta.getProducto().getNombre() : null);
         dto.setStockAlGenerar(alerta.getStockAlGenerar());
         dto.setPuntoPedidoReferencia(alerta.getPuntoPedidoReferencia());
+        dto.setOrigen(alerta.getOrigen());
+        dto.setCantidadPredicha(alerta.getCantidadPredicha());
+        dto.setFaltanteEstimado(alerta.getFaltanteEstimado());
+        dto.setSemanaInicio(alerta.getSemanaInicio());
+        dto.setSemanaFin(alerta.getSemanaFin());
+        dto.setMensaje(alerta.getMensaje());
         dto.setEstado(alerta.getEstado() != null ? alerta.getEstado().name() : null);
         dto.setFechaGenerada(alerta.getFechaGenerada());
         return dto;
