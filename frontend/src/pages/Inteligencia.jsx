@@ -4,11 +4,8 @@ import { SearchableSelect } from '../components/ui/SearchableSelect';
 import api from '../api/client';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, PieChart, Pie, Cell, Legend, ScatterChart, Scatter, LineChart, Line,
+  BarChart, Bar, Legend, LineChart, Line,
 } from 'recharts';
-
-const COLORS = ['#1565C0', '#7CB342', '#FF8F00', '#E53935', '#8E24AA', '#00ACC1', '#6D4C41'];
-const RISK_COLORS = { ALTO: '#E53935', MEDIO: '#FF8F00', BAJO: '#43A047' };
 
 function weeksAgoDate(weeks) {
   const d = new Date();
@@ -139,32 +136,7 @@ export default function Inteligencia() {
         nombre: acortar(p.productoNombre, 22),
         demanda: p.cantidadPredicha || 0,
         stock: p.stockActual || 0,
-        riesgo: p.riesgo,
       }));
-  }, [prediccionesFiltradas]);
-
-  const demandaCategoria = useMemo(() => {
-    const grouped = {};
-    prediccionesFiltradas.forEach((p) => {
-      const key = p.categoriaNombre || 'Sin categoria';
-      grouped[key] = (grouped[key] || 0) + (p.cantidadPredicha || 0);
-    });
-    return Object.entries(grouped).map(([name, value]) => ({ name, value }));
-  }, [prediccionesFiltradas]);
-
-  const riesgos = useMemo(() => {
-    const grouped = { ALTO: 0, MEDIO: 0, BAJO: 0 };
-    prediccionesFiltradas.forEach((p) => { grouped[p.riesgo || 'BAJO'] += 1; });
-    return Object.entries(grouped).filter(([, value]) => value > 0).map(([name, value]) => ({ name, value }));
-  }, [prediccionesFiltradas]);
-
-  const dispersion = useMemo(() => {
-    return prediccionesFiltradas.map((p) => ({
-      producto: p.productoNombre,
-      stock: p.stockActual || 0,
-      demanda: p.cantidadPredicha || 0,
-      riesgo: p.riesgo,
-    }));
   }, [prediccionesFiltradas]);
 
   const confianzaPromedio = prediccionesFiltradas.length > 0
@@ -172,8 +144,8 @@ export default function Inteligencia() {
     : 0;
   const demandaTotal = prediccionesFiltradas.reduce((acc, p) => acc + (p.cantidadPredicha || 0), 0);
   const riesgoAlto = prediccionesFiltradas.filter((p) => p.riesgo === 'ALTO').length;
+  const riesgoMedio = prediccionesFiltradas.filter((p) => p.riesgo === 'MEDIO').length;
   const faltanteTotal = prediccionesFiltradas.reduce((acc, p) => acc + (p.faltanteEstimado || 0), 0);
-  const sinStock = prediccionesFiltradas.filter((p) => (p.stockActual || 0) <= 0).length;
   const recomendacionesReposicion = useMemo(() => {
     return [...prediccionesFiltradas]
       .filter((p) => p.riesgo === 'ALTO' || p.riesgo === 'MEDIO' || p.faltanteEstimado > 0)
@@ -182,20 +154,6 @@ export default function Inteligencia() {
         return (prioridad[a.riesgo] - prioridad[b.riesgo]) || ((b.faltanteEstimado || 0) - (a.faltanteEstimado || 0));
       })
       .slice(0, 10);
-  }, [prediccionesFiltradas]);
-
-  const categoriasCriticas = useMemo(() => {
-    const grouped = {};
-    prediccionesFiltradas.forEach((p) => {
-      const key = p.categoriaNombre || 'Sin categoria';
-      if (!grouped[key]) grouped[key] = { name: key, productos: 0, faltante: 0 };
-      if (p.riesgo === 'ALTO' || p.riesgo === 'MEDIO') grouped[key].productos += 1;
-      grouped[key].faltante += p.faltanteEstimado || 0;
-    });
-    return Object.values(grouped)
-      .filter((c) => c.productos > 0 || c.faltante > 0)
-      .sort((a, b) => b.faltante - a.faltante || b.productos - a.productos)
-      .slice(0, 8);
   }, [prediccionesFiltradas]);
 
   const aplicarPeriodo = (weeks) => {
@@ -317,69 +275,43 @@ export default function Inteligencia() {
           <Metric title="Demanda Predicha" value={demandaTotal} suffix="unidades" tone="info" />
           <Metric title="Confianza Promedio" value={`${confianzaPromedio}%`} suffix="modelo IA" tone="success" />
           <Metric title="Riesgo Alto" value={riesgoAlto} suffix="productos" tone="danger" />
-          <Metric title="Faltante Estimado" value={faltanteTotal} suffix="unidades" tone="danger" />
-          <Metric title="Sin Stock" value={sinStock} suffix="productos" tone="danger" />
+          <Metric title="Revision Preventiva" value={riesgoMedio} suffix="productos" tone="warning" />
+          <Metric title="Faltante Actual Estimado" value={faltanteTotal} suffix="unidades" tone="danger" />
           <Metric title="Registros Analizados" value={entrenamiento.length} suffix="registros" tone="neutral" />
         </div>
       </div>
 
-      <div className="dashboard-charts" style={{ marginBottom: 16 }}>
-        <div className="card" style={{ padding: 20 }}>
-          <h3 style={{ marginBottom: 10 }}>Recomendaciones de reposicion</h3>
-          <p className="caption" style={{ marginTop: -4, marginBottom: 12 }}>Productos que requieren revision por riesgo de quiebre o faltante estimado.</p>
-          <div className="table-wrapper">
-            <table className="table">
-              <thead>
-                <tr><th>Producto</th><th>Categoria</th><th>Stock</th><th>Demanda</th><th>Faltante</th><th>Disponible estimado</th><th>Riesgo</th><th>Accion</th></tr>
-              </thead>
-              <tbody>
-                {recomendacionesReposicion.length === 0 ? (
-                  <tr><td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-tertiary)' }}>No hay productos con reposicion prioritaria para esta seleccion.</td></tr>
-                ) : recomendacionesReposicion.map((p) => (
-                  <tr key={p.id}>
-                    <td><strong>{p.productoNombre}</strong><div className="micro">{p.sku}</div></td>
-                    <td>{p.categoriaNombre}</td>
-                    <td>{p.stockActual}</td>
-                    <td>{p.cantidadPredicha}</td>
-                    <td>{p.faltanteEstimado}</td>
-                    <td>{p.disponibleEstimado}</td>
-                    <td><RiskBadge riesgo={p.riesgo} /></td>
-                    <td><strong>{p.accionSugerida}</strong></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+        <h3 style={{ marginBottom: 10 }}>Recomendaciones de reposicion</h3>
+        <p className="caption" style={{ marginTop: -4, marginBottom: 12 }}>Productos que requieren revision por riesgo de quiebre o faltante estimado.</p>
+        <div className="table-wrapper">
+          <table className="table">
+            <thead>
+              <tr><th>Producto</th><th>Categoria</th><th>Stock</th><th>Demanda</th><th>Faltante</th><th>Disponible estimado</th><th>Riesgo</th><th>Accion</th></tr>
+            </thead>
+            <tbody>
+              {recomendacionesReposicion.length === 0 ? (
+                <tr><td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-tertiary)' }}>No hay productos con reposicion prioritaria para esta seleccion.</td></tr>
+              ) : recomendacionesReposicion.map((p) => (
+                <tr key={p.id}>
+                  <td><strong>{p.productoNombre}</strong><div className="micro">{p.sku}</div></td>
+                  <td>{p.categoriaNombre}</td>
+                  <td>{p.stockActual}</td>
+                  <td>{p.cantidadPredicha}</td>
+                  <td>{p.faltanteEstimado}</td>
+                  <td>{p.disponibleEstimado}</td>
+                  <td><RiskBadge riesgo={p.riesgo} /></td>
+                  <td><strong>{p.accionSugerida}</strong></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        <ChartPanel title="Categorias criticas" subtitle="Faltante estimado acumulado por categoria">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={categoriasCriticas} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} />
-              <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="faltante" name="Faltante estimado" fill="#E53935" radius={[0, 6, 6, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartPanel>
       </div>
 
       <div className="dashboard-charts">
-        <ChartPanel title="Tendencia historica semanal" subtitle="Salidas de inventario agrupadas por semana">
-          <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={tendencia} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" vertical={false} />
-              <XAxis dataKey="semana" tick={{ fontSize: 10 }} tickFormatter={formatDateShort} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-              <Tooltip labelFormatter={formatDateLong} />
-              <Area type="monotone" dataKey="historico" name="Unidades" stroke="#1565C0" fill="#BBDEFB" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </ChartPanel>
-
         <ChartPanel title="Historico vs prediccion" subtitle="Comparacion de salidas reales con demanda estimada">
-          <ResponsiveContainer width="100%" height={240}>
+          <ResponsiveContainer width="100%" height={260}>
             <LineChart data={comparativoHistoricoPrediccion} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" vertical={false} />
               <XAxis dataKey="semana" tick={{ fontSize: 10 }} tickFormatter={formatDateShort} />
@@ -390,25 +322,9 @@ export default function Inteligencia() {
             </LineChart>
           </ResponsiveContainer>
         </ChartPanel>
-      </div>
 
-      <div className="dashboard-charts" style={{ marginTop: 16 }}>
-        <ChartPanel title="Top productos con mayor demanda" subtitle="Prediccion ordenada de mayor a menor">
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={topPredicciones} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" horizontal={false} />
-              <XAxis type="number" allowDecimals={false} />
-              <YAxis dataKey="nombre" type="category" width={145} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="demanda" name="Demanda predicha" radius={[0, 6, 6, 0]}>
-                {topPredicciones.map((p, i) => <Cell key={i} fill={RISK_COLORS[p.riesgo] || COLORS[i % COLORS.length]} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartPanel>
-
-        <ChartPanel title="Stock actual vs demanda" subtitle="Comparativo para detectar quiebres potenciales">
-          <ResponsiveContainer width="100%" height={280}>
+        <ChartPanel title="Stock actual vs demanda" subtitle="Comparativo directo para decidir reposicion">
+          <ResponsiveContainer width="100%" height={260}>
             <BarChart data={topPredicciones} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" vertical={false} />
               <XAxis dataKey="nombre" tick={{ fontSize: 10 }} />
@@ -423,46 +339,20 @@ export default function Inteligencia() {
       </div>
 
       <div className="dashboard-charts" style={{ marginTop: 16 }}>
-        <ChartPanel title="Demanda por categoria" subtitle="Distribucion de unidades predichas">
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie data={demandaCategoria} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3}>
-                {demandaCategoria.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-              </Pie>
-              <Tooltip formatter={(v) => [`${v} unidades`, 'Demanda']} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </ChartPanel>
-
-        <ChartPanel title="Riesgo stock vs demanda" subtitle="Cada punto representa un producto">
-          <ResponsiveContainer width="100%" height={260}>
-            <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: -10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" />
-              <XAxis type="number" dataKey="stock" name="Stock" />
-              <YAxis type="number" dataKey="demanda" name="Demanda" />
-              <Tooltip cursor={{ strokeDasharray: '3 3' }} formatter={(v, n) => [v, n]} labelFormatter={(_, payload) => payload?.[0]?.payload?.producto || ''} />
-              <Scatter data={dispersion} name="Productos" fill="#1565C0" />
-            </ScatterChart>
-          </ResponsiveContainer>
-        </ChartPanel>
-      </div>
-
-      <div className="dashboard-charts" style={{ marginTop: 16 }}>
-        <ChartPanel title="Distribucion de riesgos" subtitle="Productos clasificados por nivel de riesgo">
+        <ChartPanel title="Tendencia historica semanal" subtitle="Salidas de inventario agrupadas por semana">
           <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie data={riesgos} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={85} label>
-                {riesgos.map((r) => <Cell key={r.name} fill={RISK_COLORS[r.name]} />)}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
+            <AreaChart data={tendencia} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E8ECF2" vertical={false} />
+              <XAxis dataKey="semana" tick={{ fontSize: 10 }} tickFormatter={formatDateShort} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+              <Tooltip labelFormatter={formatDateLong} />
+              <Area type="monotone" dataKey="historico" name="Unidades" stroke="#1565C0" fill="#BBDEFB" strokeWidth={2} />
+            </AreaChart>
           </ResponsiveContainer>
         </ChartPanel>
 
         <div className="card" style={{ padding: 20 }}>
-          <h3 style={{ marginBottom: 10 }}>Tabla predictiva de riesgo</h3>
+          <h3 style={{ marginBottom: 10 }}>Detalle predictivo</h3>
           <div className="table-wrapper">
             <table className="table">
               <thead>
@@ -536,7 +426,7 @@ function ChartPanel({ title, subtitle, children }) {
 }
 
 function Metric({ title, value, suffix, tone }) {
-  const color = tone === 'danger' ? '#E53935' : tone === 'success' ? '#43A047' : tone === 'info' ? '#1565C0' : 'var(--text-primary)';
+  const color = tone === 'danger' ? '#E53935' : tone === 'success' ? '#43A047' : tone === 'warning' ? '#FF8F00' : tone === 'info' ? '#1565C0' : 'var(--text-primary)';
   return (
     <div className="wire-panel">
       <div className="metric-label">{title}</div>
