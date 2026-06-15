@@ -699,6 +699,31 @@ textarea.form-input {
 
 .mock-positive { color: #16a34a; font-weight: 800; }
 
+.insight-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.insight-metric-card {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  padding: 12px 14px;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.insight-metric-value {
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
 :root[data-theme='dark'] .btn-primary { color: #111827; background: #f9fafb; }
 :root[data-theme='dark'] .badge-neutral { background: #273142; color: #cbd5e1; }
 :root[data-theme='dark'] .badge-info { background: #123154; color: #93c5fd; }
@@ -754,8 +779,10 @@ textarea.form-input {
   .metric-value { font-size: 36px; }
   .dashboard-metrics { grid-template-columns: 1fr 1fr; }
   .dashboard-charts { grid-template-columns: 1fr; }
+  .insight-metrics { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 480px) {
   .dashboard-metrics { grid-template-columns: 1fr; }
+  .insight-metrics { grid-template-columns: 1fr; }
 }

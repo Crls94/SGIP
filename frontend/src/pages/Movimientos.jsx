@@ -34,7 +34,7 @@ export default function Movimientos() {
     api.get('/productos?size=100').then(({ data }) => setProductos(data.content || [])).catch(() => {});
   }, []);
 
-  const cantidadExcedeStock = form.tipo === 'SALIDA' && selectedProduct && parseInt(form.cantidad) > selectedProduct.stockActual;
+  const cantidadExcedeStock = ['SALIDA', 'MERMA'].includes(form.tipo) && selectedProduct && parseInt(form.cantidad) > selectedProduct.stockActual;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -174,7 +174,10 @@ export default function Movimientos() {
             <label>Tipo de Movimiento</label>
             <select className="form-input" value={form.tipo} onChange={update('tipo')}>
               <option value="ENTRADA">Entrada (+ stock)</option>
-              <option value="SALIDA">Salida (- stock)</option>
+              <option value="SALIDA">Salida por venta (- stock)</option>
+              <option value="MERMA">Merma (- stock)</option>
+              <option value="DEVOLUCION">Devolucion (+ stock)</option>
+              <option value="AJUSTE">Ajuste (stock final)</option>
             </select>
           </div>
 
