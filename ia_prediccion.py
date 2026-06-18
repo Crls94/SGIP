@@ -8,8 +8,12 @@ import os
 import re
 from datetime import timedelta
 
-API_URL = "http://localhost:8080/api/v1/inteligencia/datos-entrenamiento"
+API_URL = os.getenv("IA_API_URL", "http://localhost:8080/api/v1/inteligencia/datos-entrenamiento")
+LOGIN_URL = os.getenv("IA_LOGIN_URL", "http://localhost:8080/api/v1/auth/login")
 DB_URL = os.getenv("DB_URL", "postgresql://postgres:9629@localhost:5432/metroDB")
+IA_API_TOKEN = os.getenv("IA_API_TOKEN", "")
+IA_API_EMAIL = os.getenv("IA_API_EMAIL", "admin@metroica.com")
+IA_API_PASSWORD = os.getenv("IA_API_PASSWORD", "admin123")
 
 
 def normalizar_confianza(r2):
@@ -100,7 +104,8 @@ def obtener_metadata_producto(df, producto_id):
 @st.cache_data(ttl=60)
 def cargar_datos():
     try:
-        r = requests.get(API_URL, timeout=10)
+        headers = obtener_headers_api()
+        r = requests.get(API_URL, headers=headers, timeout=10)
         if r.status_code != 200:
             st.error(f"Error HTTP {r.status_code}: {r.text}")
             return None
@@ -118,6 +123,27 @@ def cargar_datos():
     except Exception as e:
         st.error(f"Error de conexion al backend: {e}")
         return None
+
+
+def obtener_headers_api():
+    token = IA_API_TOKEN.strip() or obtener_token_login()
+    return {"Authorization": f"Bearer {token}"} if token else {}
+
+
+def obtener_token_login():
+    try:
+        r = requests.post(
+            LOGIN_URL,
+            json={"email": IA_API_EMAIL, "password": IA_API_PASSWORD},
+            timeout=10,
+        )
+        if r.status_code != 200:
+            st.error(f"No se pudo autenticar IA contra el backend: HTTP {r.status_code}")
+            return ""
+        return r.json().get("token", "")
+    except Exception as e:
+        st.error(f"Error de autenticacion IA: {e}")
+        return ""
 
 def guardar_prediccion(conn, producto_id, nombre, semana_inicio, cant, confianza):
     semana_fin = semana_inicio + timedelta(days=6)

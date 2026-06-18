@@ -44,6 +44,13 @@ public class DashboardController {
         ));
 
         PrediccionDemanda ultimaPrediccion = inteligenciaService.obtenerUltimaPrediccion();
+        List<Double> precisiones = inteligenciaService.obtenerPredicciones().stream()
+                .map(p -> p.getPrecisionPorcentaje() != null ? p.getPrecisionPorcentaje().doubleValue() : null)
+                .filter(v -> v != null)
+                .toList();
+        dashboard.put("precisionPronostico", precisiones.isEmpty()
+                ? null
+                : Math.round(precisiones.stream().mapToDouble(Double::doubleValue).average().orElse(0)));
 
         if (ultimaPrediccion != null) {
             Map<String, Object> info = new LinkedHashMap<>();

@@ -23,6 +23,7 @@ public class PrediccionResponseDTO {
     private Integer cantidadPredicha;
     private Integer cantidadReal;
     private BigDecimal errorPorcentaje;
+    private BigDecimal precisionPorcentaje;
     private BigDecimal confianza;
     private String modeloVersion;
     private LocalDateTime generadoEn;

@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -93,6 +95,7 @@ public class InteligenciaService {
         dto.setCantidadPredicha(p.getCantidadPredicha());
         dto.setCantidadReal(p.getCantidadReal());
         dto.setErrorPorcentaje(p.getErrorPorcentaje());
+        completarPrecisionReal(dto, p);
         dto.setConfianza(p.getConfianza());
         dto.setModeloVersion(p.getModeloVersion());
         dto.setGeneradoEn(p.getGeneradoEn());
@@ -102,6 +105,42 @@ public class InteligenciaService {
             dto.setRiesgo(calcularRiesgo(dto.getStockActual(), dto.getPuntoPedido(), dto.getCantidadPredicha()));
         }
         return dto;
+    }
+
+    private void completarPrecisionReal(PrediccionResponseDTO dto, PrediccionDemanda p) {
+        if (p.getProducto() == null || p.getSemanaInicio() == null || p.getSemanaFin() == null
+                || LocalDate.now().isBefore(p.getSemanaFin())) {
+            return;
+        }
+
+        Integer cantidadReal = p.getCantidadReal();
+        if (cantidadReal == null) {
+            Long totalReal = movimientoRepository.sumCantidadByProductoAndTipoBetween(
+                    p.getProducto().getId(),
+                    TipoMovimiento.SALIDA,
+                    p.getSemanaInicio().atStartOfDay(),
+                    p.getSemanaFin().plusDays(1).atStartOfDay());
+            cantidadReal = totalReal == null ? 0 : totalReal.intValue();
+        }
+
+        BigDecimal error = p.getErrorPorcentaje();
+        if (error == null) {
+            error = calcularErrorPorcentaje(p.getCantidadPredicha(), cantidadReal);
+        }
+
+        dto.setCantidadReal(cantidadReal);
+        dto.setErrorPorcentaje(error);
+        dto.setPrecisionPorcentaje(BigDecimal.valueOf(100).subtract(error).max(BigDecimal.ZERO));
+    }
+
+    private BigDecimal calcularErrorPorcentaje(Integer predicho, Integer real) {
+        int demandaPredicha = predicho == null ? 0 : predicho;
+        int demandaReal = real == null ? 0 : real;
+        if (demandaPredicha == 0) {
+            return demandaReal == 0 ? BigDecimal.ZERO : BigDecimal.valueOf(100);
+        }
+        return BigDecimal.valueOf(Math.abs(demandaReal - demandaPredicha) * 100.0 / demandaPredicha)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     private boolean matchesFilters(com.metroica.sgip_backend.movimientos.InventarioMovimiento movimiento,
@@ -168,7 +207,11 @@ public class InteligenciaService {
         alerta.setMensaje(crearMensajePredictivo(producto, demanda, faltante, stockActual));
 
         AlertaStock guardada = alertaStockRepository.save(alerta);
-        notificarRiesgoPredictivo(producto, guardada.getMensaje());
+        try {
+            notificarRiesgoPredictivo(producto, guardada.getMensaje());
+        } catch (Exception ignored) {
+            // La alerta operativa no debe fallar si no se pudo emitir la notificacion auxiliar.
+        }
         return guardada;
     }
 

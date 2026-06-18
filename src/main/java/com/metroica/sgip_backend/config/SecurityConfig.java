@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/register").hasRole("ADMINISTRADOR")
-                        .requestMatchers("/api/v1/inteligencia/datos-entrenamiento").permitAll()
+                        .requestMatchers("/api/v1/inteligencia/datos-entrenamiento").hasAnyRole("ADMINISTRADOR", "GERENTE")
                         .requestMatchers("/api/v1/dashboard/**").hasAnyRole("ADMINISTRADOR", "GERENTE")
                         .requestMatchers("/api/v1/usuarios/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/productos/**").hasAnyRole("ADMINISTRADOR", "OPERARIO", "GERENTE")

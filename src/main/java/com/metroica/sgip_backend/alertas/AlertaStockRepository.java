@@ -22,4 +22,6 @@ public interface AlertaStockRepository extends JpaRepository<AlertaStock, UUID> 
 
     boolean existsByProductoAndEstadoAndOrigenAndSemanaInicio(Producto producto, EstadoAlerta estado,
                                                               String origen, LocalDate semanaInicio);
+
+    boolean existsByProductoAndEstadoAndOrigen(Producto producto, EstadoAlerta estado, String origen);
 }

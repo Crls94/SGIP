@@ -66,36 +66,9 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("Usuarios de desarrollo reparados: " + corruptos.size());
         }
 
-        if (usuarioRepository.count() == 0) {
-            Usuario admin = new Usuario();
-            admin.setNombre("Admin");
-            admin.setApellido("Sistema");
-            admin.setEmail("admin@metroica.com");
-            admin.setPasswordHash(passwordEncoder.encode("admin123"));
-            admin.setRol(RolUsuario.ADMINISTRADOR);
-            admin.setActivo(true);
-            usuarioRepository.save(admin);
-
-            Usuario operario = new Usuario();
-            operario.setNombre("Operario");
-            operario.setApellido("Tienda");
-            operario.setEmail("operario@metroica.com");
-            operario.setPasswordHash(passwordEncoder.encode("operario123"));
-            operario.setRol(RolUsuario.OPERARIO);
-            operario.setActivo(true);
-            usuarioRepository.save(operario);
-
-            Usuario gerente = new Usuario();
-            gerente.setNombre("Gerente");
-            gerente.setApellido("General");
-            gerente.setEmail("gerente@metroica.com");
-            gerente.setPasswordHash(passwordEncoder.encode("gerente123"));
-            gerente.setRol(RolUsuario.GERENTE);
-            gerente.setActivo(true);
-            usuarioRepository.save(gerente);
-
-            System.out.println("=== USUARIOS DE DESARROLLO CREADOS ===");
-        }
+        asegurarUsuarioDemo("Admin", "Sistema", "admin@metroica.com", "admin123", RolUsuario.ADMINISTRADOR);
+        asegurarUsuarioDemo("Operario", "Tienda", "operario@metroica.com", "operario123", RolUsuario.OPERARIO);
+        asegurarUsuarioDemo("Gerente", "General", "gerente@metroica.com", "gerente123", RolUsuario.GERENTE);
 
         if (environment.acceptsProfiles(Profiles.of("demo"))) {
             cargarDemoIa();
@@ -112,18 +85,30 @@ public class DataSeeder implements CommandLineRunner {
         Map<String, Categoria> categorias = crearCategoriasDemo();
         Proveedor proveedor = crearProveedorDemo();
         List<ProductoDemo> demos = List.of(
-                new ProductoDemo("IA-ARROZ-001", "Arroz Extra Costeño 5kg", "Abarrotes", 4, 4, 18, 34),
+                new ProductoDemo("IA-ARROZ-001", "Arroz Extra Costeño 5kg", "Abarrotes", 4, 4, 6, 34),
                 new ProductoDemo("IA-ACEITE-001", "Aceite Vegetal Metro 1L", "Abarrotes", 5, 3, 22, 28),
                 new ProductoDemo("IA-AZUCAR-001", "Azucar Rubia 1kg", "Abarrotes", 3, 2, 16, 26),
                 new ProductoDemo("IA-LECHE-001", "Leche Evaporada Six Pack", "Lácteos", 5, 5, 24, 30),
                 new ProductoDemo("IA-YOGURT-001", "Yogurt Familiar Fresa 1L", "Lácteos", 2, 5, 14, 18),
-                new ProductoDemo("IA-GASEOSA-001", "Gaseosa Cola 3L", "Bebidas", 7, 4, 30, 42),
+                new ProductoDemo("IA-GASEOSA-001", "Gaseosa Cola 3L", "Bebidas", 7, 4, 8, 42),
                 new ProductoDemo("IA-AGUA-001", "Agua Mineral 2.5L", "Bebidas", 6, 3, 26, 36),
                 new ProductoDemo("IA-DETERGENTE-001", "Detergente Bolsa 4kg", "Limpieza", 2, 1, 12, 16),
                 new ProductoDemo("IA-LAVAVAJILLA-001", "Lavavajilla Liquido 750ml", "Limpieza", 2, 2, 10, 15),
                 new ProductoDemo("IA-PAPEL-001", "Papel Higienico 24 rollos", "Cuidado Personal", 3, 4, 20, 24),
-                new ProductoDemo("IA-SNACK-001", "Papas Fritas Familiar", "Snacks", 6, 6, 18, 25),
-                new ProductoDemo("IA-CHOCOLATE-001", "Chocolate Bitter Barra", "Snacks", 3, 7, 12, 18)
+                new ProductoDemo("IA-SNACK-001", "Papas Fritas Familiar", "Snacks", 6, 6, 7, 25),
+                new ProductoDemo("IA-CHOCOLATE-001", "Chocolate Bitter Barra", "Snacks", 3, 7, 4, 18),
+                new ProductoDemo("IA-FIDEO-001", "Fideo Spaghetti 500g", "Abarrotes", 5, 2, 11, 24),
+                new ProductoDemo("IA-LENTEJA-001", "Lenteja Seleccionada 500g", "Abarrotes", 3, 2, 18, 22),
+                new ProductoDemo("IA-AVENA-001", "Avena Tradicional 400g", "Abarrotes", 4, 3, 5, 20),
+                new ProductoDemo("IA-JUGO-001", "Jugo Durazno 1L", "Bebidas", 5, 3, 9, 30),
+                new ProductoDemo("IA-ENERGIZANTE-001", "Bebida Energizante 473ml", "Bebidas", 4, 4, 28, 18),
+                new ProductoDemo("IA-QUESO-001", "Queso Edam 250g", "Lácteos", 3, 3, 6, 16),
+                new ProductoDemo("IA-MANTEQUILLA-001", "Mantequilla Barra 200g", "Lácteos", 2, 2, 22, 12),
+                new ProductoDemo("IA-SHAMPOO-001", "Shampoo Familiar 750ml", "Cuidado Personal", 2, 1, 8, 14),
+                new ProductoDemo("IA-JABON-001", "Jabon Tocador Pack x3", "Cuidado Personal", 5, 3, 30, 22),
+                new ProductoDemo("IA-LEJIA-001", "Lejia Lavanda 1L", "Limpieza", 4, 2, 6, 22),
+                new ProductoDemo("IA-SUAVIZANTE-001", "Suavizante Primavera 1.8L", "Limpieza", 3, 2, 18, 20),
+                new ProductoDemo("IA-GALLETA-001", "Galletas Chocolate Familiar", "Snacks", 5, 5, 9, 24)
         );
 
         for (ProductoDemo demo : demos) {
@@ -140,6 +125,17 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         System.out.println("=== DATA DEMO IA V4 CREADA ===");
+    }
+
+    private void asegurarUsuarioDemo(String nombre, String apellido, String email, String password, RolUsuario rol) {
+        Usuario usuario = usuarioRepository.findByEmail(email).orElseGet(Usuario::new);
+        usuario.setNombre(nombre);
+        usuario.setApellido(apellido);
+        usuario.setEmail(email);
+        usuario.setPasswordHash(passwordEncoder.encode(password));
+        usuario.setRol(rol);
+        usuario.setActivo(true);
+        usuarioRepository.save(usuario);
     }
 
     private Map<String, Categoria> crearCategoriasDemo() {

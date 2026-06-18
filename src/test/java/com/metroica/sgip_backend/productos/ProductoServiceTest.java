@@ -45,25 +45,36 @@ class ProductoServiceTest {
 
     @Test
     void crearProductoRechazaSkuDuplicado() {
+        // Cambios 17/07: Prueba unitaria asociada al RF-02 Gestion de Productos.
+        // Verifica que el SKU se mantenga como identificador unico dentro del inventario.
+
+        // Preparacion: se arma un producto nuevo con categoria y proveedor validos.
         ProductoCreateDTO dto = productoDto();
         Categoria categoria = new Categoria();
         categoria.setId(1);
         Proveedor proveedor = new Proveedor();
         proveedor.setId(1);
 
+        // Simulacion: categoria/proveedor existen, pero el SKU ya esta registrado.
         when(categoriaRepository.findById(1)).thenReturn(Optional.of(categoria));
         when(proveedorRepository.findById(1)).thenReturn(Optional.of(proveedor));
         when(productoRepository.findBySku("SKU-001")).thenReturn(Optional.of(new Producto()));
 
+        // Ejecucion y validacion: el servicio debe rechazar el producto por duplicidad de SKU.
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> productoService.crearProducto(dto));
 
+        // Verificacion: no se guarda ningun producto cuando falla la regla de unicidad.
         assertEquals("Ya existe un producto con el SKU: SKU-001", ex.getMessage());
         verify(productoRepository, never()).save(any());
     }
 
     @Test
     void crearProductoGuardaProductoConCategoriaYProveedor() {
+        // Cambios 17/07: Prueba funcional asociada al RF-02 Gestion de Productos.
+        // Demuestra que un producto valido queda relacionado con su categoria y proveedor.
+
+        // Preparacion: se arma el DTO con los datos minimos requeridos para crear producto.
         ProductoCreateDTO dto = productoDto();
         Categoria categoria = new Categoria();
         categoria.setId(1);
@@ -72,16 +83,21 @@ class ProductoServiceTest {
         proveedor.setId(1);
         proveedor.setNombre("Distribuidora ABC");
 
+        // Simulacion: categoria y proveedor existen, y no hay otro producto con el mismo SKU.
         when(categoriaRepository.findById(1)).thenReturn(Optional.of(categoria));
         when(proveedorRepository.findById(1)).thenReturn(Optional.of(proveedor));
         when(productoRepository.findBySku("SKU-001")).thenReturn(Optional.empty());
 
+        // Ejecucion: se crea el producto usando el servicio real.
         ProductoResponseDTO response = productoService.crearProducto(dto);
 
+        // Validacion: la respuesta conserva SKU, nombre, categoria y proveedor esperados.
         assertEquals("SKU-001", response.getSku());
         assertEquals("Arroz Extra", response.getNombre());
         assertEquals("Abarrotes", response.getCategoriaNombre());
         assertEquals("Distribuidora ABC", response.getProveedorNombre());
+
+        // Verificacion: el repositorio recibe la entidad para persistirla.
         verify(productoRepository).save(any(Producto.class));
     }
 

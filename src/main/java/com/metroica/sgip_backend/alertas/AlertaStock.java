@@ -68,4 +68,11 @@ public class AlertaStock {
 
     @Column(name = "fecha_resuelta")
     private LocalDateTime fechaResuelta;
+
+    @PrePersist
+    void prePersist() {
+        if (fechaGenerada == null) {
+            fechaGenerada = LocalDateTime.now();
+        }
+    }
 }

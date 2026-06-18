@@ -56,18 +56,38 @@ Con backend activo:
 streamlit run ia_prediccion.py
 ```
 
-El modulo IA toma los movimientos de salida desde el backend y guarda predicciones en PostgreSQL local.
+El modulo IA se autentica contra el backend, toma los movimientos de salida y guarda predicciones en PostgreSQL local.
+
+Credenciales usadas por defecto para demo:
+
+```bash
+IA_API_URL=http://localhost:8080/api/v1/inteligencia/datos-entrenamiento
+IA_API_EMAIL=admin@metroica.com
+IA_API_PASSWORD=admin123
+```
+
+Tambien puede usarse un token directo:
+
+```bash
+IA_API_TOKEN=<token_jwt>
+```
+
+Si la pantalla de IA no muestra predicciones, ejecutar nuevamente este paso y luego presionar `Aplicar filtros` en la pantalla.
+
+La precision real del pronostico se muestra cuando la semana pronosticada ya cerro. Antes de esa fecha aparece como pendiente.
 
 ## 5. Flujo de demostracion recomendado
 
 1. Iniciar sesion como administrador o gerente.
 2. Abrir Dashboard y mostrar inventario, pedidos y predicciones.
 3. Abrir Inteligencia y revisar demanda estimada, riesgo, faltante y recomendaciones.
-4. Presionar `Generar alertas IA`.
+4. Presionar `Enviar alertas predictivas`.
 5. Abrir Alertas y mostrar alertas `IA predictiva` junto con stock, demanda estimada y faltante estimado.
 6. Resolver o ignorar una alerta como administrador.
 7. Abrir Notificaciones para mostrar avisos generados.
 8. Abrir Reportes y generar/exportar reportes.
+
+Nota: las alertas predictivas no se duplican. Si ya existe una alerta activa para el mismo producto y semana, el sistema indicara que no hay nuevas alertas por generar.
 
 ## 6. Flujo de valor de IA
 

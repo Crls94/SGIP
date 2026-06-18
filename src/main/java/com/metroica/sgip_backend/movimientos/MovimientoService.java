@@ -85,14 +85,14 @@ public class MovimientoService {
     public void verificarAlertaStock(Producto producto, int stockDespues) {
         if (stockDespues <= producto.getPuntoPedido()) {
             boolean existeAlertaActiva = alertaStockRepository
-                    .findByProductoAndEstado(producto, EstadoAlerta.ACTIVA)
-                    .stream().findAny().isPresent();
+                    .existsByProductoAndEstadoAndOrigen(producto, EstadoAlerta.ACTIVA, "STOCK_REAL");
 
             if (!existeAlertaActiva) {
                 AlertaStock alerta = new AlertaStock();
                 alerta.setProducto(producto);
                 alerta.setStockAlGenerar(stockDespues);
                 alerta.setPuntoPedidoReferencia(producto.getPuntoPedido());
+                alerta.setOrigen("STOCK_REAL");
                 alerta.setEstado(EstadoAlerta.ACTIVA);
                 alertaStockRepository.save(alerta);
 
