@@ -106,7 +106,7 @@ Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se t
 | Datos de prueba | Endpoint de inventario con paginacion normal. |
 | Pasos | 1. Ejecutar consulta de inventario. 2. Medir tiempo de respuesta. |
 | Resultado esperado | La respuesta no supera los 5 segundos en condiciones normales. |
-| Automatizacion | Manual/Postman/JMeter. Se puede complementar con prueba de servicio. |
+| Automatizacion | JMeter con login JWT y header `Authorization: Bearer ${token}`. |
 
 | Campo | Descripcion |
 |---|---|
@@ -118,7 +118,7 @@ Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se t
 | Datos de prueba | Reporte inventario `xlsx`. |
 | Pasos | 1. Solicitar reporte. 2. Medir tiempo total de generacion. |
 | Resultado esperado | El reporte se genera en menos de 5 segundos en condiciones normales. |
-| Automatizacion | Manual/Postman/JMeter. |
+| Automatizacion | JMeter con login JWT y generacion de `/api/v1/reportes/inventario?formato=xlsx`. |
 
 | Campo | Descripcion |
 |---|---|
