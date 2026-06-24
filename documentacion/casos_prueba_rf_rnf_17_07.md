@@ -31,7 +31,7 @@ Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se t
 | Requisito asociado | RF-01 Autenticacion / RNF Seguridad |
 | Nombre | Login correcto genera token JWT |
 | Precondiciones | Usuario activo registrado con contrasena cifrada en BCrypt. |
-| Datos de prueba | Email: `admin@metroica.pe`, password: `admin123`, rol: `ADMINISTRADOR`. |
+| Datos de prueba | Email: `admin@metroica.com`, password: `admin123`, rol: `ADMINISTRADOR`. |
 | Pasos | 1. Preparar usuario activo. 2. Ejecutar login. 3. Validar token y rol devuelto. |
 | Resultado esperado | El sistema devuelve token JWT y rol correcto. |
 | Automatizacion | `AuthServiceTest.loginCorrectoGeneraToken` |

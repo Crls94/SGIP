@@ -19,6 +19,8 @@ Cambios 17/07: Carpeta separada para planes de rendimiento del SGIP.
 jmeter -n -t src/test/jmeter/sgip_rendimiento_basico.jmx -l target/jmeter/sgip_resultados.jtl
 ```
 
-Antes de ejecutar, verificar que `EMAIL` y `PASSWORD` del plan coincidan con un usuario existente del ambiente local.
+Antes de ejecutar, verificar que `EMAIL` y `PASSWORD` del plan coincidan con un usuario existente del ambiente local. Por defecto se usa `admin@metroica.com / admin123`, que es el usuario demo creado por el seeder.
+
+No se requiere un perfil especifico para JMeter si la base ya tiene usuarios validos. El perfil `demo` solo es necesario si se quiere cargar datos historicos para prediccion IA.
 
 Para pruebas de estres o resistencia, aumentar usuarios, ramp-up e iteraciones dentro del Thread Group.

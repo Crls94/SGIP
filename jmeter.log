@@ -1,0 +1,85 @@
+2026-06-23 17:27:24,181 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2026-06-23 17:27:24,210 INFO o.a.j.JMeter: Loading user properties from: /home/chris/.local/opt/apache-jmeter-5.6.3/bin/user.properties
+2026-06-23 17:27:24,211 INFO o.a.j.JMeter: Loading system properties from: /home/chris/.local/opt/apache-jmeter-5.6.3/bin/system.properties
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: Version 5.6.3
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: java.version=21.0.11
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: os.name=Linux
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: os.arch=amd64
+2026-06-23 17:27:24,222 INFO o.a.j.JMeter: os.version=7.0.12-1-cachyos-bore-lto
+2026-06-23 17:27:24,223 INFO o.a.j.JMeter: file.encoding=UTF-8
+2026-06-23 17:27:24,223 INFO o.a.j.JMeter: java.awt.headless=true
+2026-06-23 17:27:24,223 INFO o.a.j.JMeter: Max memory     =1073741824
+2026-06-23 17:27:24,223 INFO o.a.j.JMeter: Available Processors =16
+2026-06-23 17:27:24,240 INFO o.a.j.JMeter: Default Locale=English (EN)
+2026-06-23 17:27:24,241 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2026-06-23 17:27:24,241 INFO o.a.j.JMeter: JMeterHome=/home/chris/.local/opt/apache-jmeter-5.6.3
+2026-06-23 17:27:24,241 INFO o.a.j.JMeter: user.dir  =/home/chris/Escritorio/Metro - Proy - Integrador/sgip-backend
+2026-06-23 17:27:24,241 INFO o.a.j.JMeter: PWD       =/home/chris/Escritorio/Metro - Proy - Integrador/sgip-backend
+2026-06-23 17:27:24,242 INFO o.a.j.JMeter: IP: 127.0.1.1 Name: CachyChRds FullName: CachyChRds
+2026-06-23 17:27:24,267 INFO o.a.j.s.FileServer: Default base='/home/chris/Escritorio/Metro - Proy - Integrador/sgip-backend'
+2026-06-23 17:27:24,270 INFO o.a.j.s.FileServer: Set new base='/home/chris/Escritorio/Metro - Proy - Integrador/sgip-backend/src/test/jmeter'
+2026-06-23 17:27:24,543 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2026-06-23 17:27:24,592 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2026-06-23 17:27:24,597 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2026-06-23 17:27:24,602 INFO o.a.j.s.SaveService: Loading file: src/test/jmeter/sgip_rendimiento_basico.jmx
+2026-06-23 17:27:24,685 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-06-23 17:27:24,685 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-06-23 17:27:24,685 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-06-23 17:27:24,685 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-06-23 17:27:24,685 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2026-06-23 17:27:24,686 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2026-06-23 17:27:24,719 INFO o.a.j.JMeter: Creating summariser <summary>
+2026-06-23 17:27:24,751 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2026-06-23 17:27:24,752 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-06-23 17:27:24,753 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-06-23 17:27:24,759 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2026-06-23 17:27:24,759 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2026-06-23 17:27:24,873 INFO o.a.j.JMeter: Running test (1782253644873)
+2026-06-23 17:27:24,905 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : Usuarios concurrentes SGIP
+2026-06-23 17:27:24,905 INFO o.a.j.e.StandardJMeterEngine: Starting 10 threads for group Usuarios concurrentes SGIP.
+2026-06-23 17:27:24,905 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-06-23 17:27:24,906 INFO o.a.j.t.ThreadGroup: Starting thread group... number=1 threads=10 ramp-up=10 delayedStart=false
+2026-06-23 17:27:24,916 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-1
+2026-06-23 17:27:24,920 INFO o.a.j.t.ThreadGroup: Started thread group number 1
+2026-06-23 17:27:24,920 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2026-06-23 17:27:24,944 INFO o.a.j.p.h.s.HTTPHCAbstractImpl: Local host = CachyChRds
+2026-06-23 17:27:24,954 INFO o.a.j.p.h.s.HTTPHC4Impl: HTTP request retry count = 0
+2026-06-23 17:27:24,956 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2026-06-23 17:27:24,956 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2026-06-23 17:27:24,956 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2026-06-23 17:27:24,956 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2026-06-23 17:27:25,910 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-2
+2026-06-23 17:27:26,908 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-3
+2026-06-23 17:27:27,678 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-2
+2026-06-23 17:27:27,678 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-2
+2026-06-23 17:27:27,696 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-1
+2026-06-23 17:27:27,697 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-1
+2026-06-23 17:27:27,908 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-4
+2026-06-23 17:27:28,524 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-3
+2026-06-23 17:27:28,524 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-3
+2026-06-23 17:27:28,908 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-5
+2026-06-23 17:27:29,396 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-4
+2026-06-23 17:27:29,396 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-4
+2026-06-23 17:27:29,909 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-6
+2026-06-23 17:27:30,053 INFO o.a.j.r.Summariser: summary +     96 in 00:00:05 =   18.5/s Avg:    89 Min:    10 Max:  1069 Err:     0 (0.00%) Active: 2 Started: 6 Finished: 4
+2026-06-23 17:27:30,355 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-5
+2026-06-23 17:27:30,355 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-5
+2026-06-23 17:27:30,908 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-7
+2026-06-23 17:27:31,260 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-6
+2026-06-23 17:27:31,260 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-6
+2026-06-23 17:27:31,907 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-8
+2026-06-23 17:27:32,127 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-7
+2026-06-23 17:27:32,127 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-7
+2026-06-23 17:27:32,850 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-8
+2026-06-23 17:27:32,850 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-8
+2026-06-23 17:27:32,907 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-9
+2026-06-23 17:27:33,862 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-9
+2026-06-23 17:27:33,862 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-9
+2026-06-23 17:27:33,908 INFO o.a.j.t.JMeterThread: Thread started: Usuarios concurrentes SGIP 1-10
+2026-06-23 17:27:34,816 INFO o.a.j.t.JMeterThread: Thread is done: Usuarios concurrentes SGIP 1-10
+2026-06-23 17:27:34,817 INFO o.a.j.t.JMeterThread: Thread finished: Usuarios concurrentes SGIP 1-10
+2026-06-23 17:27:34,817 INFO o.a.j.e.StandardJMeterEngine: Notifying test listeners of end of test
+2026-06-23 17:27:34,818 INFO o.a.j.r.Summariser: summary +    104 in 00:00:05 =   21.8/s Avg:    53 Min:     7 Max:   149 Err:     0 (0.00%) Active: 0 Started: 10 Finished: 10
+2026-06-23 17:27:34,818 INFO o.a.j.r.Summariser: summary =    200 in 00:00:10 =   20.1/s Avg:    70 Min:     7 Max:  1069 Err:     0 (0.00%)

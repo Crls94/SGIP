@@ -81,7 +81,7 @@ class ReporteServiceTest {
         // Preparacion: se simula un usuario administrador autenticado para registrar el reporte generado.
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
-                        new UsuarioPrincipal(UUID.randomUUID(), "admin@metroica.pe", "ADMINISTRADOR", "Admin"),
+                        new UsuarioPrincipal(UUID.randomUUID(), "admin@metroica.com", "ADMINISTRADOR", "Admin"),
                         null,
                         List.of(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR"))));
 

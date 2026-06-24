@@ -19,7 +19,7 @@ class LoginSeleniumTest {
         // Se ejecuta solo si RUN_SELENIUM_TESTS=true para evitar fallos cuando el frontend no esta levantado.
 
         // Preparacion: la URL del frontend es configurable para usar Vite local o un despliegue real.
-        String baseUrl = System.getenv().getOrDefault("SGIP_FRONTEND_URL", "http://localhost:5173");
+        String baseUrl = System.getenv().getOrDefault("SGIP_FRONTEND_URL", "http://localhost:3000");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");

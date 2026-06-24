@@ -32,12 +32,12 @@ Cambios 17/07: Se separaron las pruebas por herramienta para demostrar los tipos
 Requiere frontend levantado y navegador disponible.
 
 ```bash
-RUN_SELENIUM_TESTS=true SGIP_FRONTEND_URL=http://localhost:5173 ./mvnw -Dtest=LoginSeleniumTest test
+RUN_SELENIUM_TESTS=true SGIP_FRONTEND_URL=http://localhost:3000 ./mvnw -Dtest=LoginSeleniumTest test
 ```
 
 ### JMeter rendimiento
 
-Requiere backend levantado y credenciales validas configuradas dentro del plan JMeter.
+Requiere backend levantado y credenciales validas configuradas dentro del plan JMeter. No requiere un perfil especifico si la base de datos ya contiene usuarios validos.
 El plan realiza login, extrae el JWT y lo envia como `Authorization: Bearer ${token}` para evitar respuestas `401 Unauthorized` en endpoints protegidos.
 
 ```bash
@@ -60,3 +60,5 @@ BUILD SUCCESS
 ```
 
 Los 3 omitidos corresponden a pruebas condicionadas por entorno: Selenium, smoke de contexto Spring y smoke de base de datos.
+
+Nota: los perfiles `dev` o `demo` no son necesarios para ejecutar la suite automatica. El perfil `demo` solo se usa cuando se desea cargar datos historicos para la demostracion de prediccion IA.

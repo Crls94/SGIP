@@ -43,18 +43,18 @@ class AuthServiceTest {
         // Preparacion: se crea un usuario activo con password cifrado como estaria en la base de datos.
         Usuario usuario = new Usuario();
         usuario.setId(UUID.randomUUID());
-        usuario.setEmail("admin@metroica.pe");
+        usuario.setEmail("admin@metroica.com");
         usuario.setNombre("Admin");
         usuario.setRol(RolUsuario.ADMINISTRADOR);
         usuario.setPasswordHash(passwordEncoder.encode("admin123"));
 
         // Datos de prueba: credenciales correctas enviadas desde el formulario de login.
         LoginRequestDTO request = new LoginRequestDTO();
-        request.setEmail("admin@metroica.pe");
+        request.setEmail("admin@metroica.com");
         request.setPassword("admin123");
 
         // Simulacion: el repositorio encuentra al usuario activo y JWT genera un token valido.
-        when(usuarioRepository.findByEmailAndActivoTrue("admin@metroica.pe")).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmailAndActivoTrue("admin@metroica.com")).thenReturn(Optional.of(usuario));
         when(jwtUtil.generateToken(usuario.getId(), usuario.getEmail(), usuario.getRol().name())).thenReturn("jwt-token");
 
         // Ejecucion: se invoca el servicio de autenticacion.
@@ -73,16 +73,16 @@ class AuthServiceTest {
 
         // Preparacion: el usuario existe, pero su password real es distinto al enviado.
         Usuario usuario = new Usuario();
-        usuario.setEmail("admin@metroica.pe");
+        usuario.setEmail("admin@metroica.com");
         usuario.setPasswordHash(passwordEncoder.encode("admin123"));
 
         // Datos de prueba: se usa una contrasena incorrecta para simular intento fallido.
         LoginRequestDTO request = new LoginRequestDTO();
-        request.setEmail("admin@metroica.pe");
+        request.setEmail("admin@metroica.com");
         request.setPassword("incorrecta");
 
         // Simulacion: el sistema encuentra al usuario activo por correo.
-        when(usuarioRepository.findByEmailAndActivoTrue("admin@metroica.pe")).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmailAndActivoTrue("admin@metroica.com")).thenReturn(Optional.of(usuario));
 
         // Ejecucion y validacion: el servicio debe rechazar las credenciales invalidas.
         RuntimeException ex = assertThrows(RuntimeException.class, () -> authService.login(request));

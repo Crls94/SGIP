@@ -158,7 +158,7 @@ class MovimientoServiceTest {
         // Preparacion: se crea un administrador que recibira la notificacion de stock critico.
         Usuario admin = new Usuario();
         admin.setId(UUID.randomUUID());
-        admin.setEmail("admin@metroica.pe");
+        admin.setEmail("admin@metroica.com");
 
         // Simulacion: no existe una alerta activa previa, por lo que el sistema debe generar una nueva.
         when(alertaStockRepository.existsByProductoAndEstadoAndOrigen(producto, EstadoAlerta.ACTIVA, "STOCK_REAL"))
@@ -181,6 +181,6 @@ class MovimientoServiceTest {
                 contains("Stock critico"),
                 contains("Aceite Vegetal"),
                 eq("ALERTA_STOCK"),
-                eq("admin@metroica.pe"));
+                eq("admin@metroica.com"));
     }
 }
