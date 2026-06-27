@@ -3,17 +3,17 @@ import numpy as np
 import streamlit as st
 import requests
 import pandas as pd
-import psycopg2
 import os
 import re
 from datetime import timedelta
 
 API_URL = os.getenv("IA_API_URL", "http://localhost:8080/api/v1/inteligencia/datos-entrenamiento")
 LOGIN_URL = os.getenv("IA_LOGIN_URL", "http://localhost:8080/api/v1/auth/login")
-DB_URL = os.getenv("DB_URL", "postgresql://postgres:9629@localhost:5432/metroDB")
+PREDICCIONES_URL = os.getenv("IA_PREDICCIONES_URL", "http://localhost:8080/api/v1/inteligencia/predicciones")
 IA_API_TOKEN = os.getenv("IA_API_TOKEN", "")
 IA_API_EMAIL = os.getenv("IA_API_EMAIL", "admin@metroica.com")
 IA_API_PASSWORD = os.getenv("IA_API_PASSWORD", "admin123")
+IA_ENV = os.getenv("IA_ENV", "demo").lower()
 
 
 def normalizar_confianza(r2):
@@ -126,6 +126,9 @@ def cargar_datos():
 
 
 def obtener_headers_api():
+    if IA_ENV == "prod" and not IA_API_TOKEN.strip():
+        st.error("En produccion configure IA_API_TOKEN para el modulo IA.")
+        return {}
     token = IA_API_TOKEN.strip() or obtener_token_login()
     return {"Authorization": f"Bearer {token}"} if token else {}
 
@@ -145,31 +148,28 @@ def obtener_token_login():
         st.error(f"Error de autenticacion IA: {e}")
         return ""
 
-def guardar_prediccion(conn, producto_id, nombre, semana_inicio, cant, confianza):
-    semana_fin = semana_inicio + timedelta(days=6)
+def guardar_prediccion(headers, producto_id, nombre, semana_inicio, cant, confianza):
     try:
-        with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO predicciones_demanda
-                    (producto_id, semana_inicio, semana_fin, cantidad_predicha, confianza, modelo_version)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                ON CONFLICT (producto_id, semana_inicio)
-                DO UPDATE SET cantidad_predicha = EXCLUDED.cantidad_predicha,
-                              confianza = EXCLUDED.confianza,
-                              modelo_version = EXCLUDED.modelo_version,
-                              generado_en = NOW()
-            """, (str(producto_id), semana_inicio.date(), semana_fin.date(), cant, round(float(confianza), 4), 'v1.0-linreg'))
-        conn.commit()
+        payload = {
+            "productoId": str(producto_id),
+            "semanaInicio": semana_inicio.date().isoformat(),
+            "cantidadPredicha": int(cant),
+            "confianza": round(float(confianza), 4),
+            "modeloVersion": "v1.0-linreg",
+        }
+        r = requests.post(PREDICCIONES_URL, headers=headers, json=payload, timeout=10)
+        if r.status_code not in (200, 201):
+            st.error(f"Error al guardar prediccion de {nombre}: HTTP {r.status_code} - {r.text}")
+            return False
         return True
     except Exception as e:
-        conn.rollback()
         st.error(f"Error al guardar prediccion de {nombre}: {e}")
         return False
 
 def main():
     st.set_page_config(page_title="IA - SGIP", page_icon="📈", layout="wide")
     st.title("🤖 Prediccion de Demanda - Metroica")
-    st.caption("Entrena, predice y guarda automaticamente en PostgreSQL.")
+    st.caption("Entrena, predice y guarda automaticamente mediante el backend SGIP.")
 
     df = cargar_datos()
 
@@ -180,7 +180,11 @@ def main():
     st.success(f"✅ {len(df)} movimientos SALIDA cargados del backend.")
     agrupado = preparar_ventas_semanales(df)
 
-    conn = psycopg2.connect(DB_URL)
+    headers = obtener_headers_api()
+    if not headers:
+        st.error("No se pudo autenticar el modulo IA contra el backend.")
+        return
+
     total_predichos = 0
 
     for pid in agrupado["productoId"].unique():
@@ -221,13 +225,12 @@ def main():
             f"Modelo: LinearRegression | Semanas historicas: {len(sub)}"
         )
 
-        if guardar_prediccion(conn, pid, nombre, semana_futura, cant, confianza):
+        if guardar_prediccion(headers, pid, nombre, semana_futura, cant, confianza):
             total_predichos += 1
 
         st.divider()
 
-    conn.close()
-    st.success(f"✅ {total_predichos} predicciones guardadas en PostgreSQL.")
+    st.success(f"✅ {total_predichos} predicciones guardadas mediante el backend SGIP.")
 
 
 if __name__ == "__main__":

@@ -1,11 +1,13 @@
 package com.metroica.sgip_backend.inteligencia;
 
 import com.metroica.sgip_backend.alertas.AlertaStockResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +35,11 @@ public class InteligenciaController {
     @GetMapping("/predicciones")
     public ResponseEntity<List<PrediccionResponseDTO>> obtenerPredicciones() {
         return ResponseEntity.ok(inteligenciaService.obtenerPredicciones());
+    }
+
+    @PostMapping("/predicciones")
+    public ResponseEntity<PrediccionResponseDTO> guardarPrediccion(@RequestBody @Valid PrediccionRequestDTO request) {
+        return ResponseEntity.ok(inteligenciaService.guardarPrediccion(request));
     }
 
     @PostMapping("/alertas-predictivas/generar")

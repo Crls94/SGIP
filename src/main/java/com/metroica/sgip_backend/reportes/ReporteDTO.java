@@ -8,7 +8,6 @@ public class ReporteDTO {
     private String tipo;
     private String formato;
     private String parametros;
-    private String rutaArchivo;
     private LocalDateTime createdAt;
     private String usuarioEmail;
     private String usuarioNombre;
@@ -16,13 +15,11 @@ public class ReporteDTO {
     public ReporteDTO() {}
 
     public ReporteDTO(UUID id, String tipo, String formato, String parametros,
-                      String rutaArchivo, LocalDateTime createdAt,
-                      String usuarioEmail, String usuarioNombre) {
+                       LocalDateTime createdAt, String usuarioEmail, String usuarioNombre) {
         this.id = id;
         this.tipo = tipo;
         this.formato = formato;
         this.parametros = parametros;
-        this.rutaArchivo = rutaArchivo;
         this.createdAt = createdAt;
         this.usuarioEmail = usuarioEmail;
         this.usuarioNombre = usuarioNombre;
@@ -36,8 +33,6 @@ public class ReporteDTO {
     public void setFormato(String formato) { this.formato = formato; }
     public String getParametros() { return parametros; }
     public void setParametros(String parametros) { this.parametros = parametros; }
-    public String getRutaArchivo() { return rutaArchivo; }
-    public void setRutaArchivo(String rutaArchivo) { this.rutaArchivo = rutaArchivo; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public String getUsuarioEmail() { return usuarioEmail; }

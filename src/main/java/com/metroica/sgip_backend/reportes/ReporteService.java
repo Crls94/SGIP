@@ -125,7 +125,6 @@ public class ReporteService {
                         r.getTipo(),
                         r.getFormato(),
                         r.getParametros(),
-                        r.getRutaArchivo(),
                         r.getCreatedAt(),
                         r.getUsuario() != null ? r.getUsuario().getEmail() : null,
                         r.getUsuario() != null ? r.getUsuario().getNombre() + " " + r.getUsuario().getApellido() : null
@@ -137,7 +136,7 @@ public class ReporteService {
     public byte[] descargarReporte(UUID id) throws IOException {
         Reporte reporte = reporteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
-        Path filePath = Paths.get(reporte.getRutaArchivo());
+        Path filePath = resolverRutaReporte(reporte.getRutaArchivo());
         if (!Files.exists(filePath)) {
             throw new RuntimeException("Archivo no encontrado en disco");
         }
@@ -170,8 +169,8 @@ public class ReporteService {
 
             String extension = "pdf".equalsIgnoreCase(formato) ? "pdf" : "xlsx";
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String filename = tipo.toLowerCase() + "_" + timestamp + "." + extension;
-            Path dirPath = Paths.get(reportesDir);
+            String filename = tipo.toLowerCase() + "_" + timestamp + "_" + UUID.randomUUID() + "." + extension;
+            Path dirPath = baseReportesDir();
             Files.createDirectories(dirPath);
 
             Path filePath = dirPath.resolve(filename);
@@ -183,6 +182,22 @@ public class ReporteService {
             entityManager.clear();
             System.err.println("Error registrando reporte (no bloquea descarga): " + e.getMessage());
         }
+    }
+
+    private Path resolverRutaReporte(String rutaArchivo) {
+        if (rutaArchivo == null || rutaArchivo.isBlank()) {
+            throw new RuntimeException("Archivo no encontrado en disco");
+        }
+        Path baseDir = baseReportesDir();
+        Path filePath = Paths.get(rutaArchivo).toAbsolutePath().normalize();
+        if (!filePath.startsWith(baseDir)) {
+            throw new RuntimeException("Ruta de reporte no permitida");
+        }
+        return filePath;
+    }
+
+    private Path baseReportesDir() {
+        return Paths.get(reportesDir).toAbsolutePath().normalize();
     }
 
     private byte[] generarInventarioExcel(List<Producto> productos) {

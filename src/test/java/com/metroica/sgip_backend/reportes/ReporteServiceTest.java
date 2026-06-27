@@ -16,6 +16,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -99,5 +100,20 @@ class ReporteServiceTest {
 
         // Validacion: el archivo generado debe contener bytes, es decir, no estar vacio.
         assertTrue(contenido.length > 0);
+    }
+
+    @Test
+    void descargarReporteRechazaRutaFueraDelDirectorioConfigurado() {
+        ReporteService service = new ReporteService(null, null, reporteRepository);
+        ReflectionTestUtils.setField(service, "reportesDir", "/tmp/opencode/reportes-test");
+
+        UUID reporteId = UUID.randomUUID();
+        Reporte reporte = new Reporte();
+        reporte.setId(reporteId);
+        reporte.setRutaArchivo("/etc/passwd");
+
+        when(reporteRepository.findById(reporteId)).thenReturn(Optional.of(reporte));
+
+        assertThrows(RuntimeException.class, () -> service.descargarReporte(reporteId));
     }
 }

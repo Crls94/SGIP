@@ -56,12 +56,13 @@ Con backend activo:
 streamlit run ia_prediccion.py
 ```
 
-El modulo IA se autentica contra el backend, toma los movimientos de salida y guarda predicciones en PostgreSQL local.
+El modulo IA se autentica contra el backend, toma los movimientos de salida y guarda predicciones usando el endpoint protegido del backend.
 
 Credenciales usadas por defecto para demo:
 
 ```bash
 IA_API_URL=http://localhost:8080/api/v1/inteligencia/datos-entrenamiento
+IA_PREDICCIONES_URL=http://localhost:8080/api/v1/inteligencia/predicciones
 IA_API_EMAIL=admin@metroica.com
 IA_API_PASSWORD=admin123
 ```

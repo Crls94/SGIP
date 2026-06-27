@@ -7,6 +7,7 @@ import com.metroica.sgip_backend.alertas.AlertaStockResponseDTO;
 import com.metroica.sgip_backend.movimientos.MovimientoRepository;
 import com.metroica.sgip_backend.notificaciones.NotificacionService;
 import com.metroica.sgip_backend.productos.Producto;
+import com.metroica.sgip_backend.productos.ProductoRepository;
 import com.metroica.sgip_backend.seguridad.Usuario;
 import com.metroica.sgip_backend.seguridad.UsuarioRepository;
 import com.metroica.sgip_backend.shared.enums.EstadoAlerta;
@@ -39,6 +40,7 @@ public class InteligenciaService {
     private final AlertaStockMapper alertaStockMapper;
     private final NotificacionService notificacionService;
     private final UsuarioRepository usuarioRepository;
+    private final ProductoRepository productoRepository;
 
     @Transactional(readOnly = true)
     public List<MovimientoExportDTO> extraerDatosEntrenamiento() {
@@ -61,6 +63,27 @@ public class InteligenciaService {
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public PrediccionResponseDTO guardarPrediccion(PrediccionRequestDTO dto) {
+        Producto producto = productoRepository.findById(dto.getProductoId())
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + dto.getProductoId()));
+
+        PrediccionDemanda prediccion = prediccionRepository
+                .findByProductoIdAndSemanaInicio(dto.getProductoId(), dto.getSemanaInicio())
+                .orElseGet(PrediccionDemanda::new);
+
+        prediccion.setProducto(producto);
+        prediccion.setSemanaInicio(dto.getSemanaInicio());
+        prediccion.setSemanaFin(dto.getSemanaInicio().plusDays(6));
+        prediccion.setCantidadPredicha(dto.getCantidadPredicha());
+        prediccion.setConfianza(dto.getConfianza());
+        prediccion.setModeloVersion(dto.getModeloVersion() == null || dto.getModeloVersion().isBlank()
+                ? "v1.0-linreg"
+                : dto.getModeloVersion().trim());
+
+        return toDTO(prediccionRepository.save(prediccion));
     }
 
     @Transactional(readOnly = true)

@@ -5,7 +5,8 @@ Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se t
 ## Criterio de seleccion
 
 - Se priorizan los RF/RNF mas importantes para la operacion de Metro Ica.
-- Se definen 2 casos por cada tipo de prueba, para un total de 16 casos.
+- Se definen 2 casos por cada tipo de prueba, para un total base de 16 casos.
+- Se agrega un caso adicional de seguridad predespliegue para validar rate limit en autenticacion.
 - Los casos automatizables se complementan con pruebas JUnit en `src/test/java`.
 - Los casos no automatizables directamente con JUnit quedan documentados para ejecucion manual o con herramientas especializadas.
 
@@ -17,7 +18,7 @@ Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se t
 | Integracion | TC-INT-001 RF-05 Pedido descuenta stock | TC-INT-002 RF-03 Movimiento genera alerta |
 | Funcional | TC-FUN-001 RF-03 Entrada de stock | TC-FUN-002 RF-09 Reporte inventario Excel |
 | Rendimiento | TC-REN-001 RNF Rendimiento consulta inventario | TC-REN-002 RNF Rendimiento generacion reporte |
-| Seguridad | TC-SEG-001 RNF Seguridad password BCrypt | TC-SEG-002 RNF Seguridad token invalido |
+| Seguridad | TC-SEG-001 RNF Seguridad password BCrypt | TC-SEG-002 RNF Seguridad token invalido / TC-SEG-003 Rate limit login |
 | Aceptacion | TC-ACE-001 RF-06 Cola priorizada | TC-ACE-002 RF-08 Dashboard gerencial |
 | Regresion | TC-REG-001 RF-05 Cancelar pedido no duplica stock | TC-REG-002 RF-09 Rechazar formato no soportado |
 | Humo | TC-HUMO-001 Carga contexto backend | TC-HUMO-002 Conexion base de datos |
@@ -143,6 +144,18 @@ Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se t
 | Pasos | 1. Validar token invalido. 2. Validar token vacio. 3. Validar token nulo. |
 | Resultado esperado | El sistema marca todos los tokens como invalidos. |
 | Automatizacion | `JwtUtilTest.tokenInvalidoDebeRetornarFalse` |
+
+| Campo | Descripcion |
+|---|---|
+| ID | TC-SEG-003 |
+| Tipo | Prueba de seguridad |
+| Requisito asociado | RNF Seguridad / RNF Disponibilidad |
+| Nombre | Rate limit bloquea exceso de intentos de login |
+| Precondiciones | Backend activo y solicitudes realizadas desde la misma IP de prueba. |
+| Datos de prueba | Endpoint: `POST /api/v1/auth/login`, mas de 10 intentos en menos de un minuto. |
+| Pasos | 1. Enviar 10 solicitudes de login. 2. Enviar una solicitud adicional dentro del mismo minuto. 3. Validar codigo HTTP. |
+| Resultado esperado | El sistema responde `429 Too Many Requests` para proteger contra fuerza bruta o abuso. |
+| Automatizacion | `RateLimitInterceptorTest.loginDebeBloquearDespuesDelLimitePorIp` y escenario JMeter de abuso controlado. |
 
 | Campo | Descripcion |
 |---|---|

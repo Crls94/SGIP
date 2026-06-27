@@ -42,7 +42,7 @@ El sistema implementado se entiende como un **monolito modular en backend**, una
 | RF-04 | Alertas de Stock Critico | Spring Mail, JPA, React, Axios. |
 | RF-05 | Gestion de Pedidos | Spring WebMVC, JPA, Validation, React. |
 | RF-06 | Cola de Pedidos Priorizada | JPA, consultas JPQL, React. |
-| RF-07 | Pronostico de Demanda | Python, Streamlit, requests, pandas, scikit-learn, psycopg2. |
+| RF-07 | Pronostico de Demanda | Python, Streamlit, requests, pandas, scikit-learn, backend REST. |
 | RF-08 | Dashboard Gerencial | React, Recharts, Axios, Spring WebMVC. |
 | RF-09 | Reportes Exportables | Apache POI, PDFBox, Spring WebMVC. |
 
@@ -719,21 +719,19 @@ Es frecuente en proyectos de datos y machine learning. Puede ser util para futur
 
 Si se quiere mantener el script limpio, podria eliminarse el import directo mientras no se use. Si se planea evolucionar el modelo, puede mantenerse justificado como dependencia numerica.
 
-### 6.7 Psycopg2 Binary
+### 6.7 Persistencia de predicciones via backend
 
-**Dependencia:** `psycopg2-binary`
-
-Permite conectar Python con PostgreSQL.
+El modulo IA usa `requests` para enviar las predicciones al backend mediante `/api/v1/inteligencia/predicciones`.
 
 **Para que se usa en SGIP:**
 
-- Conectar al `DB_URL`.
-- Insertar predicciones en `predicciones_demanda`.
-- Usar `INSERT ... ON CONFLICT` para actualizar predicciones existentes.
+- Enviar `productoId`, `semanaInicio`, `cantidadPredicha`, `confianza` y `modeloVersion` al backend.
+- Permitir que Spring Boot valide y persista en `predicciones_demanda`.
+- Evitar credenciales directas de PostgreSQL dentro del modulo Python.
 
 **Por que se incorporo:**
 
-El modulo IA guarda resultados directamente en PostgreSQL. Esto mantiene el modulo desacoplado del backend Java para la escritura de predicciones.
+El backend queda como punto unico de autorizacion, validacion y persistencia de predicciones, manteniendo el flujo IA dentro del alcance REST del sistema.
 
 **RF relacionado:** RF-07.
 
@@ -758,16 +756,16 @@ Tambien se verifico uso real de:
 
 Por tanto, RF-09 puede considerarse implementado a nivel tecnico.
 
-### 7.2 Endpoint IA publico
+### 7.2 Endpoint IA protegido
 
-El endpoint `/api/v1/inteligencia/datos-entrenamiento` esta publico.
+El endpoint `/api/v1/inteligencia/datos-entrenamiento` esta protegido por roles `ADMINISTRADOR` y `GERENTE`.
 
-Esto facilita la integracion con Python, pero en produccion podria exponer datos operativos. Se recomienda protegerlo con:
+Esto permite la integracion con Python sin exponer historicos de venta de forma publica. Para produccion se recomienda usar:
 
-- API key interna.
-- Token de servicio.
-- Red privada.
-- Rate limiting.
+- token JWT de un usuario autorizado.
+- credenciales operativas controladas.
+- red privada cuando aplique.
+- rate limiting.
 
 ### 7.3 Rate limiting en memoria
 
@@ -1101,7 +1099,7 @@ La seleccion tecnica responde directamente a los requerimientos funcionales:
 - Inventario y pedidos: WebMVC, JPA, PostgreSQL y Validation.
 - Alertas: Spring Mail.
 - Dashboard: React, Axios y Recharts.
-- IA: Streamlit, requests, pandas, scikit-learn y psycopg2.
+- IA: Streamlit, requests, pandas, scikit-learn y backend REST.
 - Reportes: Apache POI y PDFBox.
 
 El proyecto tiene una base tecnica solida. Las mejoras mas importantes para una siguiente etapa son documentacion OpenAPI, migraciones con Flyway, monitoreo con Actuator, pruebas con Testcontainers/Pytest y mejor gestion de datos remotos en frontend con TanStack Query.

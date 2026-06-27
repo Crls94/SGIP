@@ -16,18 +16,27 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
+    private static final RateLimit LOGIN_LIMIT = new RateLimit(10, Duration.ofMinutes(1));
+    private static final RateLimit PEDIDOS_LIMIT = new RateLimit(30, Duration.ofMinutes(1));
+    private static final RateLimit MOVIMIENTOS_LIMIT = new RateLimit(60, Duration.ofMinutes(1));
+    private static final RateLimit REPORTES_LIMIT = new RateLimit(20, Duration.ofMinutes(1));
+    private static final RateLimit IA_ALERTAS_LIMIT = new RateLimit(10, Duration.ofMinutes(1));
+    private static final RateLimit IA_DATOS_LIMIT = new RateLimit(30, Duration.ofMinutes(1));
+    private static final RateLimit API_GENERAL_LIMIT = new RateLimit(100, Duration.ofMinutes(1));
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
         String path = request.getRequestURI();
         String method = request.getMethod();
-        String key = resolveKey(request);
+        RateLimit limit = resolveLimit(path, method);
 
-        if (!isRateLimited(path, method)) {
+        if (limit == null) {
             return true;
         }
 
-        Bucket bucket = buckets.computeIfAbsent(key, k -> createBucket(path));
+        String key = resolveKey(request, method, path);
+        Bucket bucket = buckets.computeIfAbsent(key, k -> createBucket(limit));
         if (bucket.tryConsume(1)) {
             return true;
         }
@@ -38,33 +47,56 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    private String resolveKey(HttpServletRequest request) {
+    private String resolveKey(HttpServletRequest request, String method, String path) {
         String authHeader = request.getHeader("Authorization");
+        String identity;
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return "jwt:" + authHeader.substring(7).substring(0, Math.min(20, authHeader.length() - 7));
+            identity = "jwt:" + Integer.toHexString(authHeader.substring(7).hashCode());
+        } else {
+            identity = "ip:" + request.getRemoteAddr();
         }
-        return "ip:" + request.getRemoteAddr();
+        return identity + ":" + method + ":" + normalizePath(path);
     }
 
-    private boolean isRateLimited(String path, String method) {
-        if (path.contains("/api/v1/pedidos") && "POST".equals(method)) return true;
-        if (path.contains("/api/v1/movimientos") && "POST".equals(method)) return true;
-        return false;
+    private RateLimit resolveLimit(String path, String method) {
+        if ("POST".equals(method) && "/api/v1/auth/login".equals(path)) {
+            return LOGIN_LIMIT;
+        }
+        if ("POST".equals(method) && path.startsWith("/api/v1/pedidos")) {
+            return PEDIDOS_LIMIT;
+        }
+        if ("POST".equals(method) && path.startsWith("/api/v1/movimientos")) {
+            return MOVIMIENTOS_LIMIT;
+        }
+        if ("GET".equals(method) && path.startsWith("/api/v1/reportes")) {
+            return REPORTES_LIMIT;
+        }
+        if ("POST".equals(method) && "/api/v1/inteligencia/alertas-predictivas/generar".equals(path)) {
+            return IA_ALERTAS_LIMIT;
+        }
+        if ("GET".equals(method) && "/api/v1/inteligencia/datos-entrenamiento".equals(path)) {
+            return IA_DATOS_LIMIT;
+        }
+        if (path.startsWith("/api/v1/")) {
+            return API_GENERAL_LIMIT;
+        }
+        return null;
     }
 
-    private Bucket createBucket(String path) {
-        if (path.contains("/api/v1/pedidos")) {
-            return Bucket.builder()
-                    .addLimit(limit -> limit.capacity(3).refillIntervally(1, Duration.ofSeconds(2)).initialTokens(3))
-                    .build();
-        }
-        if (path.contains("/api/v1/movimientos")) {
-            return Bucket.builder()
-                    .addLimit(limit -> limit.capacity(5).refillIntervally(5, Duration.ofSeconds(1)).initialTokens(5))
-                    .build();
-        }
+    private Bucket createBucket(RateLimit rateLimit) {
         return Bucket.builder()
-                .addLimit(limit -> limit.capacity(20).refillIntervally(20, Duration.ofSeconds(1)).initialTokens(20))
+                .addLimit(limit -> limit.capacity(rateLimit.capacity())
+                        .refillIntervally(rateLimit.capacity(), rateLimit.period())
+                        .initialTokens(rateLimit.capacity()))
                 .build();
+    }
+
+    private String normalizePath(String path) {
+        return path
+                .replaceAll("/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", "/{id}")
+                .replaceAll("/\\d+", "/{id}");
+    }
+
+    private record RateLimit(long capacity, Duration period) {
     }
 }

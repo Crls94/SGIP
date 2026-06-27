@@ -3,4 +3,3 @@ requests
 pandas
 scikit-learn
 numpy
-psycopg2-binary

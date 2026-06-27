@@ -279,13 +279,15 @@ Servicio: InteligenciaService
   -> consulta movimientos historicos
 Python: pandas + scikit-learn
   -> agrupa ventas semanales y entrena regresion lineal
-Python: psycopg2
-  -> guarda predicciones en PostgreSQL
+Python: requests.post('/api/v1/inteligencia/predicciones')
+  -> envia predicciones al backend
+Servicio: InteligenciaService
+  -> valida y guarda predicciones en PostgreSQL
 Frontend: Inteligencia.jsx
   -> muestra predicciones al usuario
 ```
 
-Aqui se observa que el modulo IA esta desacoplado del backend, pero se integra mediante API REST y PostgreSQL.
+Aqui se observa que el modulo IA esta desacoplado de la base de datos directa y se integra mediante API REST protegida por el backend.
 
 ## 5. Analisis DAO en SGIP
 
@@ -543,7 +545,7 @@ En conjunto, estos enfoques ayudan a que SGIP sea mas facil de mantener y evoluc
 - El documento Avance V4.0 menciona arquitectura de microservicios. La implementacion actual se entiende mejor como **monolito modular con modulo IA desacoplado**, lo cual es adecuado para el alcance academico y permite evolucionar hacia microservicios si el sistema crece.
 - El rol `GERENTE` aparece en el codigo aunque Avance V4.0 menciona principalmente `Administrador` y `Operario`. Este rol esta justificado por RF-08, ya que existe un dashboard gerencial.
 - El modulo de reportes esta implementado y cumple RF-09 mediante Excel/PDF.
-- El endpoint de datos de entrenamiento de IA esta publico, lo que facilita la integracion, pero deberia protegerse en produccion.
+- El endpoint de datos de entrenamiento de IA esta protegido por roles `ADMINISTRADOR` y `GERENTE`, manteniendo la integracion con Python mediante API REST autenticada.
 
 ## 10. Conclusion
 

@@ -200,9 +200,9 @@ Se usa en `ia_prediccion.py` para crear una interfaz simple del modulo de predic
 
 **Dependencia:** `requests`
 
-Se usa para consumir el endpoint del backend `/api/v1/inteligencia/datos-entrenamiento` y obtener movimientos historicos de tipo salida.
+Se usa para consumir el endpoint protegido del backend `/api/v1/inteligencia/datos-entrenamiento` y obtener movimientos historicos de tipo salida. Tambien se usa para enviar las predicciones calculadas al endpoint `/api/v1/inteligencia/predicciones`.
 
-**Justificacion:** permite desacoplar el modulo IA del backend, comunicandose mediante API REST.
+**Justificacion:** permite desacoplar el modulo IA de la base de datos directa, comunicandose mediante API REST autenticada.
 
 ### Pandas
 
@@ -228,13 +228,11 @@ Se importa en el modulo IA como soporte para calculos numericos.
 
 **Justificacion:** es una dependencia comun en procesamiento numerico y ciencia de datos. Aunque su uso directo actual es limitado, suele ser necesaria junto con pandas y scikit-learn.
 
-### Psycopg2 Binary
+### Persistencia de predicciones via backend
 
-**Dependencia:** `psycopg2-binary`
+El modulo IA no requiere conexion directa a PostgreSQL. Luego de entrenar el modelo, envia la prediccion al backend usando `requests` y el endpoint `/api/v1/inteligencia/predicciones`.
 
-Se usa para conectar directamente el modulo IA con PostgreSQL y guardar predicciones en la tabla `predicciones_demanda` usando `INSERT ... ON CONFLICT`.
-
-**Justificacion:** permite persistir predicciones desde Python sin pasar por el backend. Esto mantiene desacoplado el proceso predictivo, aunque requiere controlar credenciales y permisos de base de datos con cuidado.
+**Justificacion:** mantiene el backend como punto unico de validacion, autorizacion y persistencia, evitando credenciales de base de datos dentro del modulo Python.
 
 ## 6. Dependencias Declaradas con Uso Parcial o Pendiente de Confirmacion
 
@@ -260,9 +258,9 @@ El backend esta organizado por funcionalidades como seguridad, productos, movimi
 
 ### Seguridad bien orientada, pero mejorable
 
-El uso de Spring Security, JWT y BCrypt es correcto. Sin embargo, el endpoint `/api/v1/inteligencia/datos-entrenamiento` esta publico. Esto facilita la integracion con el modulo IA, pero puede exponer datos operativos.
+El uso de Spring Security, JWT y BCrypt es correcto. El endpoint `/api/v1/inteligencia/datos-entrenamiento` esta protegido por roles `ADMINISTRADOR` y `GERENTE`, por lo que el modulo IA debe autenticarse antes de extraer historicos.
 
-Recomendacion: proteger este endpoint con una API key interna, token de servicio o autenticacion dedicada para el modulo IA.
+Recomendacion: en produccion, usar un token emitido para un usuario autorizado o credenciales operativas controladas para el modulo IA.
 
 ### Manejo de stock con criterio transaccional
 
@@ -331,7 +329,7 @@ Esto permitiria probar reglas importantes como:
 - Registro de movimientos.
 - Descuento atomico de stock en pedidos.
 - Bloqueo pesimista de productos.
-- Insercion de predicciones en PostgreSQL.
+- Registro de predicciones mediante el backend.
 
 ### Prioridad 3: experiencia frontend
 
