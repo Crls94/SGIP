@@ -2,6 +2,8 @@
 
 Documento base para la demostracion de pruebas del proyecto SGIP. Los casos se trazan contra los RF/RNF definidos en `Avance3/Avance3_VF.docx` y se organizan usando los 8 tipos de pruebas vistos en clase.
 
+Nota de consolidacion: este archivo conserva la matriz base inicial. La matriz total actualizada, con 45 casos automatizados/demostrables y los comandos de verificacion, se encuentra en `documentacion/casos_prueba_totales_sgip.md`.
+
 ## Criterio de seleccion
 
 - Se priorizan los RF/RNF mas importantes para la operacion de Metro Ica.

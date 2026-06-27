@@ -39,6 +39,13 @@ frontend/dist/
 ### Archivos generados por la app ###
 /reportes/
 
+### Configuracion local / privada ###
+AGENTS.md
+.env
+.env.*
+!.env.example
+documentacion/*.docx
+
 ### Logs y archivos temporales de oficina ###
 *.log
 .~lock.*#
