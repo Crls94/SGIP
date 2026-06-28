@@ -8,7 +8,7 @@ Cambios 17/07: El plan `.jmx` no se deja preconstruido para que pueda generarse 
 
 Nombre sugerido al guardar el plan creado desde JMeter:
 
-- `sgip_rendimiento_basico.jmx`: valida RNF Rendimiento con login JWT, consulta de inventario, consulta de cola de pedidos y generacion de reporte de inventario.
+- `sgip_Rendimiento_basico.jmx`: valida RNF Rendimiento con login JWT, consulta de inventario, consulta de cola de pedidos y generacion de reporte de inventario.
 
 ## Flujo del plan
 
@@ -20,7 +20,7 @@ Nombre sugerido al guardar el plan creado desde JMeter:
 ## Ejecucion sugerida despues de crear el plan
 
 ```bash
-jmeter -n -t src/test/jmeter/sgip_rendimiento_basico.jmx -l target/jmeter/sgip_resultados.jtl
+jmeter -n -t src/test/jmeter/sgip_Rendimiento_basico.jmx -l target/jmeter/sgip_resultados.jtl
 ```
 
 Antes de ejecutar, verificar que `EMAIL` y `PASSWORD` del plan coincidan con un usuario existente del ambiente local. Por defecto se usa `admin@metroica.com / admin123`, que es el usuario demo creado por el seeder.

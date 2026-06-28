@@ -41,7 +41,7 @@ Requiere backend levantado y credenciales validas configuradas dentro del plan J
 El plan realiza login, extrae el JWT y lo envia como `Authorization: Bearer ${token}` para evitar respuestas `401 Unauthorized` en endpoints protegidos.
 
 ```bash
-jmeter -n -t src/test/jmeter/sgip_rendimiento_basico.jmx -l target/jmeter/sgip_resultados.jtl
+jmeter -n -t src/test/jmeter/sgip_Rendimiento_basico.jmx -l target/jmeter/sgip_resultados.jtl
 ```
 
 Escenarios incluidos:

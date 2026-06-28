@@ -53,4 +53,18 @@ class DashboardServiceTest {
             assertEquals(ventas.get(i - 1).getFecha().plusDays(1), ventas.get(i).getFecha());
         }
     }
+
+    @Test
+    void getVentasUltimos7DiasAceptaLocalDateDevueltoPorJpa() {
+        LocalDate hoy = LocalDate.now();
+        when(pedidoRepository.findVentasUltimos7Dias()).thenReturn(List.<Object[]>of(
+                new Object[]{hoy, BigDecimal.valueOf(99.90), 2L}
+        ));
+
+        List<VentaDiariaDTO> ventas = dashboardService.getVentasUltimos7Dias();
+
+        assertEquals(hoy, ventas.get(6).getFecha());
+        assertEquals(BigDecimal.valueOf(99.90), ventas.get(6).getTotal());
+        assertEquals(2, ventas.get(6).getCantidad());
+    }
 }

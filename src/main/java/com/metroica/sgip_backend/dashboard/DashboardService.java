@@ -28,10 +28,10 @@ public class DashboardService {
 
         Map<LocalDate, VentaDiariaDTO> map = raw.stream()
                 .collect(Collectors.toMap(
-                        r -> ((java.sql.Date) r[0]).toLocalDate(),
+                        r -> toLocalDate(r[0]),
                         r -> {
                             VentaDiariaDTO dto = new VentaDiariaDTO();
-                            dto.setFecha(((java.sql.Date) r[0]).toLocalDate());
+                            dto.setFecha(toLocalDate(r[0]));
                             dto.setTotal((BigDecimal) r[1]);
                             dto.setCantidad(((Number) r[2]).intValue());
                             return dto;
@@ -52,5 +52,12 @@ public class DashboardService {
             result.add(dto);
         }
         return result;
+    }
+
+    private LocalDate toLocalDate(Object value) {
+        if (value instanceof LocalDate date) {
+            return date;
+        }
+        return ((java.sql.Date) value).toLocalDate();
     }
 }

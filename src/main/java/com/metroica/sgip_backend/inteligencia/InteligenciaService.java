@@ -131,12 +131,23 @@ public class InteligenciaService {
     }
 
     private void completarPrecisionReal(PrediccionResponseDTO dto, PrediccionDemanda p) {
-        if (p.getProducto() == null || p.getSemanaInicio() == null || p.getSemanaFin() == null
-                || LocalDate.now().isBefore(p.getSemanaFin())) {
+        if (p.getProducto() == null || p.getSemanaInicio() == null || p.getSemanaFin() == null) {
             return;
         }
 
         Integer cantidadReal = p.getCantidadReal();
+        BigDecimal error = p.getErrorPorcentaje();
+        if (cantidadReal != null && error != null) {
+            dto.setCantidadReal(cantidadReal);
+            dto.setErrorPorcentaje(error);
+            dto.setPrecisionPorcentaje(BigDecimal.valueOf(100).subtract(error).max(BigDecimal.ZERO));
+            return;
+        }
+
+        if (LocalDate.now().isBefore(p.getSemanaFin())) {
+            return;
+        }
+
         if (cantidadReal == null) {
             Long totalReal = movimientoRepository.sumCantidadByProductoAndTipoBetween(
                     p.getProducto().getId(),
@@ -146,7 +157,6 @@ public class InteligenciaService {
             cantidadReal = totalReal == null ? 0 : totalReal.intValue();
         }
 
-        BigDecimal error = p.getErrorPorcentaje();
         if (error == null) {
             error = calcularErrorPorcentaje(p.getCantidadPredicha(), cantidadReal);
         }

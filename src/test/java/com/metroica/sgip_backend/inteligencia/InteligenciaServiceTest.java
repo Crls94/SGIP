@@ -136,6 +136,24 @@ class InteligenciaServiceTest {
     }
 
     @Test
+    void obtenerPrediccionesMuestraPrecisionSiYaExisteCantidadRealGuardada() {
+        PrediccionDemanda prediccion = prediccion(
+                producto(UUID.randomUUID(), "Producto Validado", 20, 5),
+                LocalDate.now(),
+                10);
+        prediccion.setSemanaFin(LocalDate.now().plusDays(6));
+        prediccion.setCantidadReal(9);
+        prediccion.setErrorPorcentaje(BigDecimal.valueOf(10));
+        when(prediccionRepository.findUltimasPredicciones()).thenReturn(List.of(prediccion));
+
+        List<PrediccionResponseDTO> predicciones = inteligenciaService.obtenerPredicciones();
+
+        assertEquals(9, predicciones.get(0).getCantidadReal());
+        assertEquals(BigDecimal.valueOf(10), predicciones.get(0).getErrorPorcentaje());
+        assertEquals(BigDecimal.valueOf(90), predicciones.get(0).getPrecisionPorcentaje());
+    }
+
+    @Test
     void generarAlertasPredictivasCreaAlertaParaRiesgoAlto() {
         Producto producto = producto(UUID.randomUUID(), "Aceite Vegetal", 5, 3);
         PrediccionDemanda prediccion = prediccion(producto, LocalDate.of(2026, 8, 3), 12);

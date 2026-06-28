@@ -2,12 +2,20 @@
 
 Esta guia aplica cuando SGIP se ejecuta fuera del entorno demo/local. El alcance funcional se mantiene: inventario, pedidos, movimientos, alertas, reportes, dashboard, autenticacion e IA predictiva.
 
+Para una instalacion tipo cliente sin datos de simulacion, usar tambien `GUIA_ENTORNO_CLIENTE_PROD.md`.
+
 ## Perfil productivo
 
 Ejecutar el backend con:
 
 ```bash
-SPRING_PROFILES_ACTIVE=prod ./mvnw spring-boot:run
+set -a && source .env && set +a && ./mvnw spring-boot:run
+```
+
+Alternativa recomendada para evitar olvidar variables:
+
+```bash
+bash scripts/run-prod.sh
 ```
 
 En produccion no usar perfiles `dev` ni `demo`, porque esos perfiles crean usuarios y datos de demostracion.
@@ -23,6 +31,8 @@ export DB_PASSWORD=password_seguro
 export JWT_SECRET=clave_larga_segura_minimo_32_caracteres
 export REPORTES_DIR=/ruta/segura/reportes
 ```
+
+Usar `.env.example` como plantilla local. Los valores reales deben configurarse en el servidor o gestor de secretos, no commitearse.
 
 Opcional:
 
@@ -49,6 +59,19 @@ export IA_API_TOKEN=token_emitido_para_usuario_admin_o_gerente
 En produccion no se debe habilitar el perfil `demo` ni abrir el registro publico. Si la base productiva inicia vacia, crear el primer administrador mediante una migracion o script SQL controlado por el responsable de despliegue.
 
 El valor de `password_hash` debe ser un hash BCrypt generado fuera del repositorio. Despues de crear el primer administrador, los demas usuarios se gestionan desde la pantalla de Usuarios con una sesion administrativa.
+
+Plantilla disponible:
+
+```bash
+psql -h localhost -U sgip_user -d metroDB_cliente \
+  -v admin_email='admin@cliente.com' \
+  -v admin_nombre='Admin' \
+  -v admin_apellido='Cliente' \
+  -v admin_password_hash='$2a$10$hash_bcrypt_generado_fuera_del_repo' \
+  -f Adicionales/crear_primer_admin_prod.sql
+```
+
+No usar `DataSeeder` para crear usuarios productivos; `DataSeeder` solo existe para `dev` y `demo`.
 
 ## Validaciones previas
 
