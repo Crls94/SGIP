@@ -136,6 +136,8 @@ Al exceder el límite, se responde `429 Too Many Requests`:
 # Generar secreto JWT seguro (mín. 32 caracteres)
 openssl rand -base64 48
 
+# En Windows, usar Git Bash o instalar OpenSSL desde https://slproweb.com/products/Win32OpenSSL.html
+
 # El secreto va en .env (no en el repositorio)
 JWT_SECRET=generado_por_openssl
 

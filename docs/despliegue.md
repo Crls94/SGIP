@@ -8,23 +8,40 @@ SGIP soporta tres modos de despliegue: local, Supabase + hosting, y VPS tradicio
 
 ### Con perfil `demo`
 
-```bash
-SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
-cd frontend && npm install && npm run dev
-```
+=== "Linux/macOS"
+    ```bash
+    SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
+    cd frontend && npm install && npm run dev
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    set SPRING_PROFILES_ACTIVE=demo && mvnw.cmd spring-boot:run
+    cd frontend && npm install && npm run dev
+    ```
 
 El perfil `demo` carga datos automáticamente. Ideal para desarrollo rápido.
 
 ### Con perfil `prod` y `.env`
 
-```bash
-cp .env.example .env
-# Editar .env con valores reales
-nano .env
-bash scripts/run-prod.sh
-```
+=== "Linux/macOS"
+    ```bash
+    cp .env.example .env
+    # Editar .env con valores reales
+    nano .env
+    bash scripts/run-prod.sh
+    ```
 
-El script `scripts/run-prod.sh` carga `.env`, valida las variables y arranca.
+=== "Windows (CMD)"
+    ```cmd
+    copy .env.example .env
+    rem Editar .env con valores reales
+    notepad .env
+    rem Ejecutar backend manualmente
+    mvnw.cmd spring-boot:run
+    ```
+
+El script `scripts/run-prod.sh` carga `.env`, valida las variables y arranca. **Solo disponible en Linux/macOS.**
 
 ---
 
@@ -56,57 +73,111 @@ REPORTES_DIR=./reportes
 
 ### 3. Cargar el esquema
 
-```bash
-psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
-  -f Adicionales/metro_esquema_clean.sql
-```
+=== "Linux/macOS"
+    ```bash
+    psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
+      -f Adicionales/metro_esquema_clean.sql
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" ^
+      -f Adicionales/metro_esquema_clean.sql
+    ```
 
 ### 4. Crear el primer administrador
 
-```bash
-# Generar hash BCrypt fuera del repositorio
-# Ejemplo con Python:
-python -c "import bcrypt; print(bcrypt.hashpw(b'mi_password'.encode(), bcrypt.gensalt()).decode())"
+=== "Linux/macOS"
+    ```bash
+    # Generar hash BCrypt fuera del repositorio
+    # Ejemplo con Python:
+    python -c "import bcrypt; print(bcrypt.hashpw(b'mi_password'.encode(), bcrypt.gensalt()).decode())"
 
-# Insertar con psql
-psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
-  -v admin_email='admin@cliente.com' \
-  -v admin_nombre='Admin' \
-  -v admin_apellido='Cliente' \
-  -v admin_password_hash='$2a$10$...' \
-  -f Adicionales/crear_primer_admin_prod.sql
-```
+    # Insertar con psql
+    psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
+      -v admin_email='admin@cliente.com' \
+      -v admin_nombre='Admin' \
+      -v admin_apellido='Cliente' \
+      -v admin_password_hash='$2a$10$...' \
+      -f Adicionales/crear_primer_admin_prod.sql
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    rem Generar hash BCrypt fuera del repositorio
+    rem Ejemplo con Python:
+    python -c "import bcrypt; print(bcrypt.hashpw(b'mi_password'.encode(), bcrypt.gensalt()).decode())"
+
+    rem Insertar con psql
+    psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" ^
+      -v admin_email='admin@cliente.com' ^
+      -v admin_nombre='Admin' ^
+      -v admin_apellido='Cliente' ^
+      -v admin_password_hash='$2a$10$...' ^
+      -f Adicionales/crear_primer_admin_prod.sql
+    ```
 
 ### 5. Cargar datasets de preproducción (opcional)
 
-```bash
-# Dataset de tienda e IA
-psql "postgresql://..." \
-  -v admin_email='admin@cliente.com' \
-  -f Adicionales/dataset_preproduccion_tienda_ia.sql
+=== "Linux/macOS"
+    ```bash
+    # Dataset de tienda e IA
+    psql "postgresql://..." \
+      -v admin_email='admin@cliente.com' \
+      -f Adicionales/dataset_preproduccion_tienda_ia.sql
 
-# Dataset de pedidos y dashboard
-psql "postgresql://..." \
-  -v admin_email='admin@cliente.com' \
-  -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
+    # Dataset de pedidos y dashboard
+    psql "postgresql://..." \
+      -v admin_email='admin@cliente.com' \
+      -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
 
-# Backfill de precisión IA
-psql "postgresql://..." \
-  -f Adicionales/dataset_preproduccion_precision_ia.sql
-```
+    # Backfill de precisión IA
+    psql "postgresql://..." \
+      -f Adicionales/dataset_preproduccion_precision_ia.sql
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    rem Dataset de tienda e IA
+    psql "postgresql://..." ^
+      -v admin_email='admin@cliente.com' ^
+      -f Adicionales/dataset_preproduccion_tienda_ia.sql
+
+    rem Dataset de pedidos y dashboard
+    psql "postgresql://..." ^
+      -v admin_email='admin@cliente.com' ^
+      -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
+
+    rem Backfill de precisión IA
+    psql "postgresql://..." ^
+      -f Adicionales/dataset_preproduccion_precision_ia.sql
+    ```
 
 ### 6. Migrar datos desde PostgreSQL local
 
-```bash
-# Exportar base local
-pg_dump -h localhost -U postgres -d metroDB_cliente \
-  -n public --no-owner --no-acl -Fc -f sgip_local.dump
+=== "Linux/macOS"
+    ```bash
+    # Exportar base local
+    pg_dump -h localhost -U postgres -d metroDB_cliente \
+      -n public --no-owner --no-acl -Fc -f sgip_local.dump
 
-# Restaurar en Supabase
-pg_restore --no-owner --no-acl \
-  -h aws-0-region.pooler.supabase.com -p 5432 \
-  -U postgres.xxxxxxxxx -d postgres sgip_local.dump
-```
+    # Restaurar en Supabase
+    pg_restore --no-owner --no-acl \
+      -h aws-0-region.pooler.supabase.com -p 5432 \
+      -U postgres.xxxxxxxxx -d postgres sgip_local.dump
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    rem Exportar base local
+    pg_dump -h localhost -U postgres -d metroDB_cliente ^
+      -n public --no-owner --no-acl -Fc -f sgip_local.dump
+
+    rem Restaurar en Supabase
+    pg_restore --no-owner --no-acl ^
+      -h aws-0-region.pooler.supabase.com -p 5432 ^
+      -U postgres.xxxxxxxxx -d postgres sgip_local.dump
+    ```
 
 ### 7. Arrancar backend
 
@@ -136,6 +207,9 @@ Verificar que el backend arranca sin errores de esquema.
 
 ### 1. Preparar el servidor
 
+!!! note "Específico de Linux"
+    Esta sección usa `apt` y es exclusiva de distribuciones Linux (Ubuntu/Debian). Para Windows se recomienda usar **Docker** o **WSL2**.
+
 ```bash
 # Actualizar paquetes
 sudo apt update && sudo apt upgrade -y
@@ -152,23 +226,43 @@ sudo apt install nginx -y
 
 ### 2. Clonar y construir
 
-```bash
-git clone https://github.com/ChriSHM29/sgipProy.git
-cd sgipProy
-git checkout version4.0
+=== "Linux/macOS"
+    ```bash
+    git clone https://github.com/ChriSHM29/sgipProy.git
+    cd sgipProy
+    git checkout version4.0
 
-# Crear .env
-cp .env.example .env
-nano .env
+    # Crear .env
+    cp .env.example .env
+    nano .env
 
-# Construir backend
-./mvnw package
+    # Construir backend
+    ./mvnw package
 
-# Construir frontend
-cd frontend
-npm install
-npm run build
-```
+    # Construir frontend
+    cd frontend
+    npm install
+    npm run build
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    git clone https://github.com/ChriSHM29/sgipProy.git
+    cd sgipProy
+    git checkout version4.0
+
+    rem Crear .env
+    copy .env.example .env
+    notepad .env
+
+    rem Construir backend
+    mvnw.cmd package
+
+    rem Construir frontend
+    cd frontend
+    npm install
+    npm run build
+    ```
 
 ### 3. Ejecutar backend como servicio `systemd`
 
@@ -255,22 +349,44 @@ curl http://localhost:8080/api/v1/inteligencia/predicciones \
 
 ## IA Predictiva en producción
 
-```bash
-IA_ENV=prod \
-IA_API_URL=https://dominio-cliente/api/v1/inteligencia/datos-entrenamiento \
-IA_PREDICCIONES_URL=https://dominio-cliente/api/v1/inteligencia/predicciones \
-IA_LOGIN_URL=https://dominio-cliente/api/v1/auth/login \
-IA_API_TOKEN=eyJhbGciOi... \
-streamlit run ia_prediccion.py
-```
+=== "Linux/macOS"
+    ```bash
+    IA_ENV=prod \
+    IA_API_URL=https://dominio-cliente/api/v1/inteligencia/datos-entrenamiento \
+    IA_PREDICCIONES_URL=https://dominio-cliente/api/v1/inteligencia/predicciones \
+    IA_LOGIN_URL=https://dominio-cliente/api/v1/auth/login \
+    IA_API_TOKEN=eyJhbGciOi... \
+    streamlit run ia_prediccion.py
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    set IA_ENV=prod && ^
+    set IA_API_URL=https://dominio-cliente/api/v1/inteligencia/datos-entrenamiento && ^
+    set IA_PREDICCIONES_URL=https://dominio-cliente/api/v1/inteligencia/predicciones && ^
+    set IA_LOGIN_URL=https://dominio-cliente/api/v1/auth/login && ^
+    set IA_API_TOKEN=eyJhbGciOi... && ^
+    streamlit run ia_prediccion.py
+    ```
 
 En local para pruebas:
 
-```bash
-IA_ENV=prod \
-IA_API_URL=http://localhost:8080/api/v1/inteligencia/datos-entrenamiento \
-IA_PREDICCIONES_URL=http://localhost:8080/api/v1/inteligencia/predicciones \
-IA_LOGIN_URL=http://localhost:8080/api/v1/auth/login \
-IA_API_TOKEN=eyJhbGciOi... \
-streamlit run ia_prediccion.py
-```
+=== "Linux/macOS"
+    ```bash
+    IA_ENV=prod \
+    IA_API_URL=http://localhost:8080/api/v1/inteligencia/datos-entrenamiento \
+    IA_PREDICCIONES_URL=http://localhost:8080/api/v1/inteligencia/predicciones \
+    IA_LOGIN_URL=http://localhost:8080/api/v1/auth/login \
+    IA_API_TOKEN=eyJhbGciOi... \
+    streamlit run ia_prediccion.py
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    set IA_ENV=prod && ^
+    set IA_API_URL=http://localhost:8080/api/v1/inteligencia/datos-entrenamiento && ^
+    set IA_PREDICCIONES_URL=http://localhost:8080/api/v1/inteligencia/predicciones && ^
+    set IA_LOGIN_URL=http://localhost:8080/api/v1/auth/login && ^
+    set IA_API_TOKEN=eyJhbGciOi... && ^
+    streamlit run ia_prediccion.py
+    ```

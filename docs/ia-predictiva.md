@@ -123,12 +123,21 @@ No requiere autenticación. Ideal para desarrollo y pruebas.
 
 ### Modo producción
 
-```bash
-IA_ENV=prod \
-IA_API_URL=https://dominio-cliente/api/v1/inteligencia/datos-entrenamiento \
-IA_API_TOKEN=eyJhbGciOi... \
-streamlit run ia_prediccion.py
-```
+=== "Linux/macOS"
+    ```bash
+    IA_ENV=prod \
+    IA_API_URL=https://dominio-cliente/api/v1/inteligencia/datos-entrenamiento \
+    IA_API_TOKEN=eyJhbGciOi... \
+    streamlit run ia_prediccion.py
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    set IA_ENV=prod && ^
+    set IA_API_URL=https://dominio-cliente/api/v1/inteligencia/datos-entrenamiento && ^
+    set IA_API_TOKEN=eyJhbGciOi... && ^
+    streamlit run ia_prediccion.py
+    ```
 
 En modo producción, la IA se autentica con un token JWT de un usuario `ADMINISTRADOR` o `GERENTE`. El token se obtiene mediante `POST /api/v1/auth/login`.
 

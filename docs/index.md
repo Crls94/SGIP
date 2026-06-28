@@ -75,21 +75,39 @@ http://localhost:8080/swagger-ui.html
 
 ## Quickstart
 
-```bash
-git clone https://github.com/ChriSHM29/sgipProy.git
-cd sgipProy
+=== "Linux/macOS"
+    ```bash
+    git clone https://github.com/ChriSHM29/sgipProy.git
+    cd sgipProy
 
-# Backend (perfil demo con datos de prueba)
-SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
+    # Backend (perfil demo con datos de prueba)
+    SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
 
-# Frontend
-cd frontend && npm install && npm run dev
+    # Frontend
+    cd frontend && npm install && npm run dev
 
-# IA Predictiva
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-streamlit run ia_prediccion.py
-```
+    # IA Predictiva
+    python -m venv venv && source venv/bin/activate
+    pip install -r requirements.txt
+    streamlit run ia_prediccion.py
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    git clone https://github.com/ChriSHM29/sgipProy.git
+    cd sgipProy
+
+    rem Backend (perfil demo con datos de prueba)
+    set SPRING_PROFILES_ACTIVE=demo && mvnw.cmd spring-boot:run
+
+    rem Frontend
+    cd frontend && npm install && npm run dev
+
+    rem IA Predictiva
+    python -m venv venv && venv\Scripts\activate
+    pip install -r requirements.txt
+    streamlit run ia_prediccion.py
+    ```
 
 ---
 

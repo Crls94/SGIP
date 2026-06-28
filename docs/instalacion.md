@@ -26,9 +26,15 @@ git checkout version4.0
 
 El perfil `demo` carga automáticamente categorías, productos, usuarios demo y datos históricos para IA. **Solo para desarrollo local**.
 
-```bash
-SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
-```
+=== "Linux/macOS"
+    ```bash
+    SPRING_PROFILES_ACTIVE=demo ./mvnw spring-boot:run
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    set SPRING_PROFILES_ACTIVE=demo && mvnw.cmd spring-boot:run
+    ```
 
 Usuarios demo disponibles:
 
@@ -42,9 +48,15 @@ El backend estará disponible en `http://localhost:8080`.
 
 ### Perfil dev (esquema existente, sin seed automático)
 
-```bash
-SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
-```
+=== "Linux/macOS"
+    ```bash
+    SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    set SPRING_PROFILES_ACTIVE=dev && mvnw.cmd spring-boot:run
+    ```
 
 ### Perfil prod (requiere variables de entorno)
 
@@ -73,19 +85,31 @@ Los archivos compilados quedan en `frontend/dist/`.
 
 ## IA Predictiva — Python + Streamlit
 
-```bash
-python -m venv venv
-source venv/bin/activate        # Linux/macOS
-# venv\Scripts\activate         # Windows
+=== "Linux/macOS"
+    ```bash
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
 
-pip install -r requirements.txt
+    # Modo local (sin autenticación)
+    streamlit run ia_prediccion.py
 
-# Modo local (sin autenticación)
-streamlit run ia_prediccion.py
+    # Modo producción (requiere token JWT)
+    IA_ENV=prod IA_API_TOKEN=<token_jwt> streamlit run ia_prediccion.py
+    ```
 
-# Modo producción (requiere token JWT)
-IA_ENV=prod IA_API_TOKEN=<token_jwt> streamlit run ia_prediccion.py
-```
+=== "Windows (CMD)"
+    ```cmd
+    python -m venv venv
+    venv\Scripts\activate
+    pip install -r requirements.txt
+
+    rem Modo local (sin autenticación)
+    streamlit run ia_prediccion.py
+
+    rem Modo producción (requiere token JWT)
+    set IA_ENV=prod && set IA_API_TOKEN=<token_jwt> && streamlit run ia_prediccion.py
+    ```
 
 La UI de Streamlit estará disponible en `http://localhost:8501`.
 
@@ -105,26 +129,52 @@ psql -d metroDB -f Adicionales/metro_esquema_clean.sql
 
 ### Dataset de preproducción (opcional, para productivo)
 
-```bash
-psql -d metroDB_cliente -f Adicionales/metro_esquema_clean.sql
-psql -d metroDB_cliente \
-  -v admin_email='admin@cliente.com' \
-  -f Adicionales/dataset_preproduccion_tienda_ia.sql
-psql -d metroDB_cliente \
-  -v admin_email='admin@cliente.com' \
-  -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
-```
+=== "Linux/macOS"
+    ```bash
+    psql -d metroDB_cliente -f Adicionales/metro_esquema_clean.sql
+    psql -d metroDB_cliente \
+      -v admin_email='admin@cliente.com' \
+      -f Adicionales/dataset_preproduccion_tienda_ia.sql
+    psql -d metroDB_cliente \
+      -v admin_email='admin@cliente.com' \
+      -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    psql -d metroDB_cliente -f Adicionales/metro_esquema_clean.sql
+    psql -d metroDB_cliente ^
+      -v admin_email='admin@cliente.com' ^
+      -f Adicionales/dataset_preproduccion_tienda_ia.sql
+    psql -d metroDB_cliente ^
+      -v admin_email='admin@cliente.com' ^
+      -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
+    ```
 
 ## Verificar instalación
 
-```bash
-# Backend
-./mvnw test
+=== "Linux/macOS"
+    ```bash
+    # Backend
+    ./mvnw test
 
-# Frontend
-cd frontend && npm audit --omit=dev --audit-level=moderate && npm run build
+    # Frontend
+    cd frontend && npm audit --omit=dev --audit-level=moderate && npm run build
 
-# IA
-source venv/bin/activate
-python -m unittest test_ia_prediccion.py
-```
+    # IA
+    source venv/bin/activate
+    python -m unittest test_ia_prediccion.py
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    rem Backend
+    mvnw.cmd test
+
+    rem Frontend
+    cd frontend && npm audit --omit=dev --audit-level=moderate && npm run build
+
+    rem IA
+    venv\Scripts\activate
+    python -m unittest test_ia_prediccion.py
+    ```

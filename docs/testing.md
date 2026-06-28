@@ -8,9 +8,15 @@ SGIP cuenta con una suite de pruebas multi-capa que abarca tests unitarios, de i
 
 ### Suite principal
 
-```bash
-./mvnw test
-```
+=== "Linux/macOS"
+    ```bash
+    ./mvnw test
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    mvnw.cmd test
+    ```
 
 ### Resultados actuales
 
@@ -54,10 +60,17 @@ Los 3 tests skipped requieren condiciones de entorno específicas:
 
 ### Ejecutar un test específico
 
-```bash
-./mvnw -Dtest=InteligenciaServiceTest test
-./mvnw -Dtest=DashboardServiceTest test
-```
+=== "Linux/macOS"
+    ```bash
+    ./mvnw -Dtest=InteligenciaServiceTest test
+    ./mvnw -Dtest=DashboardServiceTest test
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    mvnw.cmd -Dtest=InteligenciaServiceTest test
+    mvnw.cmd -Dtest=DashboardServiceTest test
+    ```
 
 ---
 
@@ -87,10 +100,17 @@ El build verifica que el código compila, que las dependencias son resolubles y 
 
 ### Pruebas unitarias
 
-```bash
-source venv/bin/activate
-python -m unittest test_ia_prediccion.py
-```
+=== "Linux/macOS"
+    ```bash
+    source venv/bin/activate
+    python -m unittest test_ia_prediccion.py
+    ```
+
+=== "Windows (CMD)"
+    ```cmd
+    venv\Scripts\activate
+    python -m unittest test_ia_prediccion.py
+    ```
 
 Resultado: `Ran 5 tests, OK`.
 

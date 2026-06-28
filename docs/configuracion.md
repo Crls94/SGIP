@@ -105,6 +105,9 @@ El script `scripts/run-prod.sh` facilita el arranque productivo:
 bash scripts/run-prod.sh
 ```
 
+!!! note "Solo Linux/macOS"
+    `scripts/run-prod.sh` es un script bash. Para Windows, configurar las variables manualmente en `.env` y ejecutar `mvnw.cmd spring-boot:run`.
+
 El script:
 
 1. Verifica que `.env` existe.
