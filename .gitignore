@@ -79,3 +79,6 @@ src/test/testng/
 
 ### JMeter view duplicado ###
 View Results Tree.jmx
+
+### Documentos obsoletos removidos del tracking (conservados localmente) ###
+documentacion/informes/librerias-y-dependencias.md
