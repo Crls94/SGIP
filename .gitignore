@@ -61,3 +61,21 @@ documentacion/**/*.pptx
 *_dump.sql
 *_backup.sql
 datos_sgip.sql
+
+### Guias reemplazadas por docs/ (MkDocs) ###
+GUIA_*
+
+### Histórico / cierre de avances ###
+CIERRE_SCOPE_*
+
+### Imágenes de referencia no usadas en el proyecto ###
+ref/
+
+### HTML generado en documentacion ###
+documentacion/**/*.html
+
+### Carpeta vacia ###
+src/test/testng/
+
+### JMeter view duplicado ###
+View Results Tree.jmx
