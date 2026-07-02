@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿Qué librerías necesito para mi proyecto? - SGIP</title>
+  <style>
+    :root {
+      --navy: #0a1f44;
+      --blue: #1565c0;
+      --cyan: #00acc1;
+      --green: #58a65c;
+      --orange: #f57c00;
+      --purple: #5e35b1;
+      --text: #263142;
+      --muted: #647084;
+      --line: #dce3ee;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Aptos, Arial, sans-serif;
+      background: radial-gradient(circle at top left, #e9f2ff 0, transparent 28%), var(--bg);
+      color: var(--text);
+    }
+
+    .deck {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 22px 64px;
+    }
+
+    .slide {
+      min-height: 680px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 42px;
+      margin: 0 0 34px;
+      box-shadow: 0 24px 60px rgba(10, 31, 68, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 8px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+    }
+
+    .slide-number {
+      position: absolute;
+      right: 34px;
+      bottom: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    h1, h2, h3 { margin: 0; color: var(--navy); }
+
+    h1 {
+      font-size: 58px;
+      line-height: 1.02;
+      letter-spacing: -1.8px;
+      max-width: 760px;
+    }
+
+    h2 {
+      font-size: 34px;
+      letter-spacing: -0.6px;
+      margin-bottom: 10px;
+    }
+
+    h3 { font-size: 18px; margin-bottom: 10px; }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.55;
+      max-width: 860px;
+      margin: 16px 0 0;
+    }
+
+    .eyebrow {
+      color: var(--blue);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1.8px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 30px;
+    }
+
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6px;
+      background: var(--blue);
+    }
+
+    .card.green::before { background: var(--green); }
+    .card.orange::before { background: var(--orange); }
+    .card.purple::before { background: var(--purple); }
+    .card.cyan::before { background: var(--cyan); }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 26px;
+      overflow: hidden;
+      border-radius: 16px;
+      box-shadow: 0 0 0 1px var(--line);
+      background: white;
+    }
+
+    th, td {
+      padding: 13px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      font-size: 14px;
+      line-height: 1.38;
+    }
+
+    th {
+      background: var(--navy);
+      color: white;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+    }
+
+    tr:nth-child(even) td { background: #f9fbff; }
+    tr:last-child td { border-bottom: 0; }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: #eef5ff;
+      color: var(--blue);
+      font-weight: 700;
+      font-size: 14px;
+      border: 1px solid #d7e7ff;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 1fr 62px 1fr 62px 1fr 62px 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-top: 58px;
+    }
+
+    .node {
+      min-height: 132px;
+      border-radius: 24px;
+      color: white;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      font-weight: 800;
+      font-size: 21px;
+      box-shadow: 0 20px 44px rgba(10, 31, 68, 0.18);
+    }
+
+    .node small {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 5px;
+      opacity: 0.9;
+    }
+
+    .arrow {
+      color: var(--muted);
+      text-align: center;
+      font-size: 34px;
+      font-weight: 900;
+    }
+
+    .blue { background: var(--blue); }
+    .green-bg { background: var(--green); }
+    .purple-bg { background: var(--purple); }
+    .orange-bg { background: var(--orange); }
+
+    .hero-icons {
+      position: absolute;
+      right: 68px;
+      top: 110px;
+      display: grid;
+      grid-template-columns: repeat(2, 82px);
+      gap: 18px;
+    }
+
+    .icon {
+      width: 82px;
+      height: 82px;
+      border-radius: 25px;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      box-shadow: 0 18px 38px rgba(10, 31, 68, 0.20);
+    }
+
+    .quote {
+      margin-top: 36px;
+      padding: 26px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #eaf3ff, #eefaf2);
+      border: 1px solid #d4e6f7;
+      font-size: 22px;
+      color: var(--navy);
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 26px;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    @media (max-width: 900px) {
+      .slide { min-height: auto; padding: 30px 22px 54px; }
+      h1 { font-size: 40px; }
+      h2 { font-size: 28px; }
+      .cols-2, .cols-3, .cols-4, .two-column { grid-template-columns: 1fr; }
+      .architecture { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+      .hero-icons { position: static; grid-template-columns: repeat(4, 1fr); margin-top: 34px; }
+      .icon { width: 100%; height: 68px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="deck">
+    <section class="slide">
+      <div class="eyebrow">Proyecto SGIP - Metro Ica</div>
+      <h1>¿Qué librerías necesito para mi proyecto?</h1>
+      <p class="subtitle">Presentación sobre las librerías Java y externas necesarias para desarrollar un sistema de inventario, pedidos, reportes y predicción de demanda.</p>
+      <div class="pill-row">
+        <span class="pill">Java 21 + Spring Boot</span>
+        <span class="pill">React + Vite</span>
+        <span class="pill">PostgreSQL</span>
+        <span class="pill">Python + IA</span>
+      </div>
+      <div class="hero-icons">
+        <div class="icon blue">API</div>
+        <div class="icon green-bg">DB</div>
+        <div class="icon purple-bg">IA</div>
+        <div class="icon orange-bg">PDF</div>
+      </div>
+      <span class="slide-number">01</span>
+    </section>
+
+    <section class="slide">
+      <h2>Objetivo del proyecto SGIP</h2>
+      <p class="subtitle">SGIP automatiza procesos críticos de Metro Ica: inventario, pedidos, alertas, reportes y predicción de demanda.</p>
+      <div class="grid cols-3">
+        <article class="card"><h3>Objetivo general</h3><p>Implementar un sistema web integral para controlar stock, gestionar pedidos y apoyar decisiones gerenciales con datos.</p></article>
+        <article class="card orange"><h3>Problemas que resuelve</h3><p>Diferencias entre stock físico y digital, desorden en pedidos local/delivery y ausencia de predicción de demanda.</p></article>
+        <article class="card green"><h3>Solución tecnológica</h3><p>API REST en Spring Boot, frontend React, PostgreSQL centralizado y módulo IA en Python.</p></article>
+      </div>
+      <table>
+        <thead><tr><th>Funcionalidad clave</th><th>Necesidad técnica</th><th>Librerías asociadas</th></tr></thead>
+        <tbody>
+          <tr><td>Autenticación y roles</td><td>Seguridad, contraseña cifrada y JWT</td><td>Spring Security, BCrypt, JJWT</td></tr>
+          <tr><td>Inventario y pedidos</td><td>CRUD, transacciones y base de datos</td><td>Spring Data JPA, PostgreSQL</td></tr>
+          <tr><td>Reportes</td><td>Generación de Excel y PDF</td><td>Apache POI, PDFBox</td></tr>
+          <tr><td>Dashboard e IA</td><td>Gráficos y predicción semanal</td><td>Recharts, pandas, scikit-learn</td></tr>
+        </tbody>
+      </table>
+      <span class="slide-number">02</span>
+    </section>
+
+    <section class="slide">
+      <h2>Arquitectura tecnológica</h2>
+      <p class="subtitle">Las librerías se seleccionan según la capa del sistema y la responsabilidad que cumplen.</p>
+      <div class="architecture">
+        <div class="node blue">Frontend<small>React + Vite</small></div>
+        <div class="arrow">→</div>
+        <div class="node green-bg">Backend<small>Spring Boot</small></div>
+        <div class="arrow">→</div>
+        <div class="node purple-bg">Base de datos<small>PostgreSQL</small></div>
+        <div class="arrow">↔</div>
+        <div class="node orange-bg">Módulo IA<small>Python</small></div>
+      </div>
+      <div class="grid cols-4">
+        <article class="card"><h3>Interfaz</h3><p>React, Router, Axios y Recharts para pantallas, rutas, API y gráficos.</p></article>
+        <article class="card green"><h3>Negocio</h3><p>Spring WebMVC, Security, JPA y Validation para API, seguridad y reglas.</p></article>
+        <article class="card purple"><h3>Datos</h3><p>PostgreSQL y JPA para persistencia relacional y transacciones.</p></article>
+        <article class="card orange"><h3>IA</h3><p>Pandas, scikit-learn y psycopg2 para predicción y guardado de resultados.</p></article>
+      </div>
+      <span class="slide-number">03</span>
+    </section>
+
+    <section class="slide">
+      <h2>Librerías Java para el backend</h2>
+      <p class="subtitle">El backend concentra seguridad, persistencia, reglas de negocio, reportes y notificaciones.</p>
+      <table>
+        <thead><tr><th>Librería</th><th>¿Para qué sirve?</th><th>Ventaja para SGIP</th></tr></thead>
+        <tbody>
+          <tr><td>Spring WebMVC</td><td>Crear endpoints REST</td><td>Comunicación estándar con React mediante JSON/HTTP.</td></tr>
+          <tr><td>Spring Data JPA</td><td>Repositories, entidades y transacciones</td><td>Reduce SQL manual y aplica el patrón DAO.</td></tr>
+          <tr><td>PostgreSQL Driver</td><td>Conexión JDBC</td><td>Permite trabajar con la base de datos central.</td></tr>
+          <tr><td>Spring Security + BCrypt</td><td>Roles y contraseñas seguras</td><td>Protege datos sensibles de usuarios, stock y pedidos.</td></tr>
+          <tr><td>JJWT</td><td>Tokens JWT</td><td>Autenticación stateless para frontend desacoplado.</td></tr>
+          <tr><td>Spring Validation</td><td>Validar DTOs</td><td>Evita datos inválidos antes de ejecutar reglas de negocio.</td></tr>
+          <tr><td>Lombok</td><td>Reducir código repetitivo</td><td>Menos getters, setters y constructores manuales.</td></tr>
+          <tr><td>Bucket4j</td><td>Rate limiting</td><td>Protege pedidos y movimientos contra abuso o doble envío.</td></tr>
+        </tbody>
+      </table>
+      <span class="slide-number">04</span>
+    </section>
+
+    <section class="slide">
+      <h2>Manejo de archivos y generación de reportes</h2>
+      <p class="subtitle">SGIP necesita reportes exportables para inventario y pedidos, alineados con el requerimiento RF-09.</p>
+      <div class="two-column">
+        <article class="card green"><h3>Apache POI</h3><p>Genera archivos Excel .xlsx desde Java. Se elige porque permite crear hojas, filas y celdas para reportes administrativos analizables.</p></article>
+        <article class="card orange"><h3>Apache PDFBox</h3><p>Genera documentos PDF desde Java. Se elige porque produce reportes formales, compartibles y con formato fijo.</p></article>
+      </div>
+      <table>
+        <thead><tr><th>Reporte</th><th>Formato</th><th>Utilidad</th></tr></thead>
+        <tbody>
+          <tr><td>Inventario</td><td>Excel / PDF</td><td>Revisar productos, stock, proveedores y punto de pedido.</td></tr>
+          <tr><td>Pedidos</td><td>Excel / PDF</td><td>Analizar ventas, canal, estado, cliente, total y fechas.</td></tr>
+          <tr><td>Historial</td><td>Base de datos</td><td>Registrar reportes generados y usuario responsable.</td></tr>
+        </tbody>
+      </table>
+      <span class="slide-number">05</span>
+    </section>
+
+    <section class="slide">
+      <h2>Frontend y módulo de inteligencia artificial</h2>
+      <p class="subtitle">Las librerías externas complementan la experiencia visual y el análisis predictivo.</p>
+      <div class="two-column">
+        <div>
+          <h3>Frontend</h3>
+          <table>
+            <thead><tr><th>Librería</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>React</td><td>Interfaz por componentes.</td></tr>
+              <tr><td>React Router DOM</td><td>Rutas protegidas por módulo.</td></tr>
+              <tr><td>Axios</td><td>Consumo de API REST y JWT.</td></tr>
+              <tr><td>Recharts</td><td>Gráficos del dashboard.</td></tr>
+              <tr><td>Vite</td><td>Desarrollo y build rápido.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>Inteligencia artificial</h3>
+          <table>
+            <thead><tr><th>Librería</th><th>Uso</th></tr></thead>
+            <tbody>
+              <tr><td>Streamlit</td><td>Interfaz visual del módulo IA.</td></tr>
+              <tr><td>Requests</td><td>Lectura de datos del backend.</td></tr>
+              <tr><td>Pandas</td><td>Limpieza y agrupación semanal.</td></tr>
+              <tr><td>Scikit-learn</td><td>Regresión lineal explicable.</td></tr>
+              <tr><td>Psycopg2</td><td>Guardado de predicciones en PostgreSQL.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <span class="slide-number">06</span>
+    </section>
+
+    <section class="slide">
+      <h2>Logs, monitoreo y opciones futuras</h2>
+      <p class="subtitle">Para una etapa productiva, el proyecto puede fortalecerse con herramientas de documentación, pruebas y observabilidad.</p>
+      <table>
+        <thead><tr><th>Librería / Tecnología</th><th>Prioridad</th><th>¿Para qué serviría?</th><th>Ventaja</th></tr></thead>
+        <tbody>
+          <tr><td>springdoc-openapi</td><td>Alta</td><td>Swagger/OpenAPI</td><td>Documenta endpoints y facilita pruebas.</td></tr>
+          <tr><td>Flyway</td><td>Alta</td><td>Migraciones SQL</td><td>Control versionado de la base de datos.</td></tr>
+          <tr><td>Spring Boot Actuator</td><td>Alta</td><td>Health checks y métricas</td><td>Apoya monitoreo y disponibilidad.</td></tr>
+          <tr><td>Testcontainers</td><td>Media/Alta</td><td>Pruebas con PostgreSQL real</td><td>Valida transacciones y repositories.</td></tr>
+          <tr><td>Sentry</td><td>Media</td><td>Captura de errores</td><td>Diagnóstico en producción.</td></tr>
+          <tr><td>TanStack Query</td><td>Media</td><td>Cache y sincronización API</td><td>Reduce lógica repetida en React.</td></tr>
+          <tr><td>pytest / joblib</td><td>Media</td><td>Pruebas y modelos IA</td><td>Mayor confiabilidad del módulo predictivo.</td></tr>
+          <tr><td>Redis</td><td>Futura</td><td>Rate limiting y cache distribuido</td><td>Escalabilidad con varias instancias.</td></tr>
+        </tbody>
+      </table>
+      <span class="slide-number">07</span>
+    </section>
+
+    <section class="slide">
+      <h2>Conclusión</h2>
+      <p class="subtitle">Las librerías elegidas permiten construir SGIP de forma segura, mantenible y alineada con sus requerimientos funcionales.</p>
+      <div class="grid cols-3">
+        <article class="card"><h3>Seguridad</h3><p>Spring Security, BCrypt y JJWT protegen usuarios, roles y endpoints críticos.</p></article>
+        <article class="card green"><h3>Persistencia</h3><p>Spring Data JPA y PostgreSQL aseguran datos centralizados y transacciones confiables.</p></article>
+        <article class="card orange"><h3>Reportes</h3><p>Apache POI y PDFBox permiten Excel/PDF para operación y gerencia.</p></article>
+        <article class="card purple"><h3>Interfaz</h3><p>React, Axios, Router y Recharts ofrecen una SPA modular y visual.</p></article>
+        <article class="card cyan"><h3>IA</h3><p>Pandas y scikit-learn transforman datos históricos en predicciones semanales.</p></article>
+        <article class="card"><h3>Evolución</h3><p>OpenAPI, Flyway, Actuator y Testcontainers fortalecen producción y mantenimiento.</p></article>
+      </div>
+      <div class="quote">Las librerías no solo aceleran el desarrollo: permiten cumplir los requerimientos de SGIP de forma profesional.</div>
+      <span class="slide-number">08</span>
+    </section>
+  </main>
+</body>
+</html>
