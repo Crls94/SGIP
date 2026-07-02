@@ -47,7 +47,17 @@ AGENTS.md
 .env.*
 !.env.example
 documentacion/*.docx
+documentacion/**/*.docx
+documentacion/*.pptx
+documentacion/**/*.pptx
 
 ### Logs y archivos temporales de oficina ###
 *.log
 .~lock.*#
+
+### Dumps / backups de base de datos ###
+*.dump
+*.backup
+*_dump.sql
+*_backup.sql
+datos_sgip.sql

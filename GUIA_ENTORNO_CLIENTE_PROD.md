@@ -135,7 +135,7 @@ Una base `prod` recien instalada no tiene historial suficiente para demostrar IA
 Documento tecnico:
 
 ```text
-documentacion/dataset_preproduccion_tienda_ia.md
+documentacion/datasets/dataset_preproduccion_tienda_ia.md
 ```
 
 Ejecucion:
@@ -159,7 +159,7 @@ psql -h localhost -U sgip_user -d metroDB_cliente \
 Documento tecnico:
 
 ```text
-documentacion/dataset_preproduccion_pedidos_dashboard.md
+documentacion/datasets/dataset_preproduccion_pedidos_dashboard.md
 ```
 
 Si ya se ejecuto la IA y existen predicciones futuras sin precision, puede cargarse una validacion historica simulada para sustentacion:
@@ -172,7 +172,7 @@ psql -h localhost -U sgip_user -d metroDB_cliente \
 Documento tecnico:
 
 ```text
-documentacion/dataset_preproduccion_precision_ia.md
+documentacion/datasets/dataset_preproduccion_precision_ia.md
 ```
 
 ## 9. Validacion final de presentacion

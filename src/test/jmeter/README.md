@@ -46,4 +46,4 @@ Si se crea un plan de abuso o fuerza bruta sobre login, la respuesta `429 Too Ma
 
 Las metricas observadas por escenario se documentan en:
 
-- `documentacion/jmeter_metricas_segun_escenarios_especificos.md`
+- `documentacion/casos-prueba/jmeter_metricas_segun_escenarios_especificos.md`
