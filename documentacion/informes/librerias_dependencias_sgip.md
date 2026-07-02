@@ -797,24 +797,7 @@ Existen pruebas para JWT y `UsuarioPrincipal`, pero faltan pruebas para reglas c
 
 ## 8. Librerias recomendadas para evolucion futura
 
-### 8.1 Springdoc OpenAPI
-
-**Libreria:** `springdoc-openapi`  
-**Componente:** Backend  
-**Prioridad:** Alta
-
-**Para que serviria:**
-
-- Generar documentacion Swagger/OpenAPI.
-- Probar endpoints desde navegador.
-- Facilitar exposicion academica.
-- Ayudar al frontend a conocer contratos de API.
-
-**Por que conviene en SGIP:**
-
-SGIP tiene muchos endpoints: autenticacion, productos, movimientos, pedidos, reportes, dashboard e inteligencia. Swagger permitiria documentarlos de forma clara.
-
-### 8.2 Flyway
+### 8.1 Flyway
 
 **Libreria:** `flyway-core`  
 **Componente:** Backend / Base de datos  

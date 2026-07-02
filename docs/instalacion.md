@@ -17,7 +17,7 @@
 ```bash
 git clone https://github.com/ChriSHM29/sgipProy.git
 cd sgipProy
-git checkout version4.0
+git checkout version5.0
 ```
 
 ## Backend — Spring Boot

@@ -3,7 +3,7 @@ site_description: Documentación oficial del sistema SGIP. Backend Spring Boot, 
 site_url: https://ChriSHM29.github.io/sgipProy/
 repo_url: https://github.com/ChriSHM29/sgipProy
 repo_name: ChriSHM29/sgipProy
-edit_uri: edit/version4.0/docs/
+edit_uri: edit/version5.0/docs/
 
 theme:
   name: material

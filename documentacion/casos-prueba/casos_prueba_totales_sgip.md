@@ -6,16 +6,16 @@ Documento consolidado de pruebas para la demostracion del sistema SGIP. Incluye 
 
 | Grupo | Herramienta | Ubicacion | Cantidad | Comando / ejecucion |
 |---|---|---|---:|---|
-| Backend unitario, integracion y seguridad | JUnit, Mockito, Spring Test | `src/test/java` | 38 metodos `@Test` | `./mvnw test` |
+| Backend unitario, integracion y seguridad | JUnit, Mockito, Spring Test | `src/test/java` | 40 metodos `@Test` + 2 BDD | `./mvnw test` |
 | Aceptacion BDD | Cucumber | `src/test/resources/features` | 2 escenarios | `./mvnw test` |
-| IA predictiva | Python unittest | `test_ia_prediccion.py` | 5 pruebas | `/tmp/opencode/sgip-ia-venv/bin/python -m unittest test_ia_prediccion.py` |
+| IA predictiva | Python unittest | `ia/test_ia_prediccion.py` | 5 pruebas | `python -m unittest test_ia_prediccion.py` |
 | Rendimiento y abuso controlado | Apache JMeter | `src/test/jmeter/*.jmx` | 2 planes versionados | Abrir/ejecutar con Apache JMeter |
 
 Resultado verificado el 27/06/2026:
 
 | Suite | Resultado |
 |---|---|
-| Maven backend + Cucumber | `Tests run: 40, Failures: 0, Errors: 0, Skipped: 3`, `BUILD SUCCESS` |
+| Maven backend + Cucumber | `Tests run: 42, Failures: 0, Errors: 0, Skipped: 3`, `BUILD SUCCESS` |
 | Python IA | `Ran 5 tests`, `OK` |
 
 Nota: las pruebas omitidas en Maven corresponden a escenarios dependientes de ambiente, como Selenium con navegador/frontend activo, smoke de base de datos y contexto completo cuando el ambiente no esta habilitado.
@@ -25,7 +25,7 @@ Nota: las pruebas omitidas en Maven corresponden a escenarios dependientes de am
 | Proposito | Comando |
 |---|---|
 | Ejecutar pruebas backend, seguridad, BDD y smoke | `./mvnw test` |
-| Ejecutar pruebas IA | `/tmp/opencode/sgip-ia-venv/bin/python -m unittest test_ia_prediccion.py` |
+| Ejecutar pruebas IA | `python -m unittest test_ia_prediccion.py` |
 | Ejecutar build frontend | `cd frontend && npm run build` |
 | Ejecutar auditoria frontend productiva | `cd frontend && npm audit --omit=dev --audit-level=moderate` |
 | Ejecutar Selenium login | `RUN_SELENIUM_TESTS=true SGIP_FRONTEND_URL=http://localhost:3000 ./mvnw -Dtest=LoginSeleniumTest test` |
@@ -91,8 +91,8 @@ Nota: las pruebas omitidas en Maven corresponden a escenarios dependientes de am
 
 ## Procedimiento recomendado para demostracion
 
-1. Ejecutar `./mvnw test` y mostrar el resumen `Tests run: 40, Failures: 0, Errors: 0`.
-2. Ejecutar `/tmp/opencode/sgip-ia-venv/bin/python -m unittest test_ia_prediccion.py` y mostrar `Ran 5 tests OK`.
+1. Ejecutar `./mvnw test` y mostrar el resumen `Tests run: 42, Failures: 0, Errors: 0`.
+2. Ejecutar `python -m unittest test_ia_prediccion.py` y mostrar `Ran 5 tests OK`.
 3. Mostrar `src/test/java` como evidencia de pruebas backend en codigo.
 4. Mostrar `src/test/resources/features/sgip_aceptacion.feature` como evidencia BDD.
 5. Mostrar `src/test/jmeter` como evidencia RNF externa versionada.
@@ -104,3 +104,4 @@ Nota: las pruebas omitidas en Maven corresponden a escenarios dependientes de am
 - JMeter se conserva dentro del repositorio solo como plan versionado, pero se ejecuta con una aplicacion externa.
 - Las pruebas Python cubren el modulo IA porque el entrenamiento y preparacion de datos viven fuera del backend Java.
 - No se agregaron herramientas externas nuevas como Postman porque JUnit, Cucumber, Selenium, Python unittest y JMeter ya cubren el alcance RF/RNF.
+- La version canónica de esta matriz en MkDocs se encuentra en el sitio de documentacion: https://ChriSHM29.github.io/sgipProy/casos-prueba/

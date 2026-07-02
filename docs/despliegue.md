@@ -230,7 +230,7 @@ sudo apt install nginx -y
     ```bash
     git clone https://github.com/ChriSHM29/sgipProy.git
     cd sgipProy
-    git checkout version4.0
+    git checkout version5.0
 
     # Crear .env
     cp .env.example .env
@@ -249,7 +249,7 @@ sudo apt install nginx -y
     ```cmd
     git clone https://github.com/ChriSHM29/sgipProy.git
     cd sgipProy
-    git checkout version4.0
+    git checkout version5.0
 
     rem Crear .env
     copy .env.example .env

@@ -10,7 +10,6 @@ Cambios 17/07: Se separaron las pruebas por herramienta para demostrar los tipos
 | Cucumber BDD | `src/test/java/com/metroica/sgip_backend/bdd` y `src/test/resources/features` | Aceptacion en formato Given/When/Then. |
 | Selenium | `src/test/java/com/metroica/sgip_backend/selenium` | Funcionales web sobre el frontend. |
 | JMeter | `src/test/jmeter` | Rendimiento, carga, estres y resistencia. |
-| TestNG | `src/test/testng` | Carpeta reservada para humo con TestNG si se exige. |
 | Jenkins | `Jenkinsfile` | Integracion continua y automatizacion de pruebas. |
 
 ## Comandos
@@ -52,7 +51,7 @@ Escenarios incluidos:
 
 ## Resultado validado
 
-La suite base fue validada con Maven:
+> Nota: este resultado corresponde al 17/07/2025. La suite actual (version 4.0/5.0) alcanza `Tests run: 42, Failures: 0, Errors: 0, Skipped: 3`.
 
 ```text
 Tests run: 26, Failures: 0, Errors: 0, Skipped: 3

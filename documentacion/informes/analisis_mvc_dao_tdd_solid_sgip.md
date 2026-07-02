@@ -427,22 +427,28 @@ Y el reporte debe registrarse en la tabla reportes
 
 ### 6.5 Pruebas existentes y pruebas faltantes
 
-Pruebas existentes:
+Pruebas existentes (suite completa implementada, 42 tests automatizados, 0 fallos):
 
 - `JwtUtilTest.java`
 - `UsuarioPrincipalTest.java`
 - `SgipBackendApplicationTests.java`
+- `AuthServiceTest.java`
+- `MovimientoServiceTest.java`
+- `PedidoServiceTest.java`
+- `ProductoServiceTest.java`
+- `ReporteServiceTest.java`
+- `DashboardServiceTest.java`
+- `InteligenciaServiceTest.java`
+- `RateLimitInterceptorTest.java`
+- `CucumberAcceptanceTest.java` (BDD)
+- `LoginSeleniumTest.java` (condicional)
+- `IntegrationDatabaseSmokeTest.java` (condicional)
+- `test_ia_prediccion.py` (5 pruebas IA)
 
-Pruebas recomendadas:
+Pruebas recomendadas para evolucion futura:
 
-- `MovimientoServiceTest`
-- `PedidoServiceTest`
-- `ProductoServiceTest`
-- `ReporteServiceTest`
-- `AuthServiceTest`
-- `InteligenciaServiceTest`
 - Pruebas de integracion con PostgreSQL real usando Testcontainers.
-- Pruebas del modulo IA con `pytest`.
+- Pruebas del modulo IA con mayor cobertura.
 
 ## 7. Principios SOLID en SGIP
 
