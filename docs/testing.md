@@ -2,6 +2,8 @@
 
 SGIP cuenta con una suite de pruebas multi-capa que abarca tests unitarios, de integración, de aceptación (BDD), de interfaz (Selenium) y de rendimiento (JMeter), además de pruebas específicas para el frontend y el módulo de IA.
 
+La matriz formal completa de casos, trazabilidad RF/RNF y comandos por sistema operativo está disponible en [Casos de Prueba](casos-prueba.md).
+
 ---
 
 ## Backend — Java / Spring Boot

@@ -105,7 +105,7 @@ def obtener_metadata_producto(df, producto_id):
 def cargar_datos():
     try:
         headers = obtener_headers_api()
-        r = requests.get(API_URL, headers=headers, timeout=10)
+        r = requests.get(API_URL, headers=headers, timeout=15)
         if r.status_code != 200:
             st.error(f"Error HTTP {r.status_code}: {r.text}")
             return None
@@ -138,7 +138,7 @@ def obtener_token_login():
         r = requests.post(
             LOGIN_URL,
             json={"email": IA_API_EMAIL, "password": IA_API_PASSWORD},
-            timeout=10,
+            timeout=15,
         )
         if r.status_code != 200:
             st.error(f"No se pudo autenticar IA contra el backend: HTTP {r.status_code}")
@@ -157,7 +157,7 @@ def guardar_prediccion(headers, producto_id, nombre, semana_inicio, cant, confia
             "confianza": round(float(confianza), 4),
             "modeloVersion": "v1.0-linreg",
         }
-        r = requests.post(PREDICCIONES_URL, headers=headers, json=payload, timeout=10)
+        r = requests.post(PREDICCIONES_URL, headers=headers, json=payload, timeout=15)
         if r.status_code not in (200, 201):
             st.error(f"Error al guardar prediccion de {nombre}: HTTP {r.status_code} - {r.text}")
             return False
