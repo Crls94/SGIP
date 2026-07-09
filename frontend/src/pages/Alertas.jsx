@@ -28,7 +28,7 @@ export default function Alertas() {
   const resolver = async (id, estado) => {
     try {
       await api.patch(`/alertas/${id}/resolver`, null, { params: { estado } });
-      toast(estado === 'RESUELTA' ? 'Alerta resuelta' : 'Alerta ignorada', 'success');
+      toast(estado === 'RESUELTA' ? 'Alerta marcada como atendida' : 'Alerta descartada', 'success');
       fetchAlertas();
     } catch (err) {
       toast(err.response?.data?.error || 'Error', 'error');
@@ -88,10 +88,10 @@ export default function Alertas() {
       {isAdmin && (
         <div className="flex-row" style={{ gap: 8, marginTop: 12 }}>
           <button className="btn btn-accent btn-sm" style={{ flex: 1 }} onClick={() => resolver(a.id, 'RESUELTA')}>
-            Resolver
+            Marcar como atendida
           </button>
           <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => resolver(a.id, 'IGNORADA')}>
-            Ignorar
+            Descartar
           </button>
         </div>
       )}
@@ -109,7 +109,7 @@ export default function Alertas() {
 
       {!isAdmin && (
         <div className="card mb-16" style={{ padding: 14 }}>
-          <span className="caption">Vista de consulta. Solo administradores pueden resolver o ignorar alertas.</span>
+          <span className="caption">Vista de consulta. Solo administradores pueden marcar alertas como atendidas o descartarlas.</span>
         </div>
       )}
 

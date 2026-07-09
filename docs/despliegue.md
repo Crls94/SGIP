@@ -1,6 +1,87 @@
 # Despliegue
 
-SGIP soporta tres modos de despliegue: local, Supabase + hosting, y VPS tradicional.
+SGIP usa como flujo principal la **Opción A: despliegue tradicional/manual**. La aplicación se despliega con backend Spring Boot, frontend React/Vite, base de datos PostgreSQL o Supabase y módulo IA en Streamlit conectado por API.
+
+Docker no es obligatorio para esta versión. En el modelo de referencia corresponde a la **Opción B: despliegue contenedorizado**, por lo que queda documentado como alternativa futura opcional.
+
+---
+
+## Arquitectura del sistema y entornos
+
+### Arquitectura de despliegue
+
+```mermaid
+flowchart LR
+    U[Usuario final] --> F[Frontend React/Vite]
+    F --> N[Nginx / Hosting web]
+    N --> B[Backend Spring Boot API REST]
+    B --> DB[(PostgreSQL / Supabase)]
+    IA[IA predictiva Streamlit] --> B
+    B --> R[Directorio de reportes]
+    B --> M[SMTP opcional]
+```
+
+| Componente | Responsabilidad | Ubicación de despliegue |
+|---|---|---|
+| Frontend React/Vite | Interfaz web de administradores, gerentes y operarios | Hosting web, Nginx o `frontend/dist` |
+| Backend Spring Boot | API REST, seguridad JWT, reglas de negocio y reportes | Servidor/VPS o plataforma Java |
+| PostgreSQL / Supabase | Persistencia de inventario, pedidos, usuarios, alertas y predicciones | Supabase o PostgreSQL administrado/local |
+| IA Streamlit | Entrenamiento y envío de predicciones mediante API backend | Ejecución manual/controlada con variables `IA_*` |
+| Nginx | Servir frontend y proxyear `/api` al backend | VPS Linux, si se usa despliegue tradicional |
+
+### Entornos disponibles
+
+| Entorno | Perfil | Propósito | Base de datos | Observaciones |
+|---|---|---|---|---|
+| Desarrollo local | `dev` o `demo` | Trabajo individual y pruebas rápidas | PostgreSQL local | El perfil `demo` carga datos automáticamente. No usar en producción. |
+| Preproducción / staging | `prod` | Validación final con configuración similar a producción | Supabase o PostgreSQL externo | Puede cargar datasets de preproducción para demo, dashboard e IA. |
+| Producción | `prod` | Entorno accesible por usuarios finales | Supabase o PostgreSQL administrado | No usa `DataSeeder`; requiere variables reales y primer admin creado por SQL controlado. |
+
+---
+
+## Requisitos previos
+
+| Componente | Versión / recomendación |
+|---|---|
+| Java | JDK 21 |
+| Maven | Wrapper incluido: `./mvnw` o `mvnw.cmd` |
+| Node.js | 20+ |
+| PostgreSQL | 16+ o Supabase PostgreSQL |
+| Python | 3.10+ para IA predictiva |
+| Nginx | Última versión estable si se usa VPS |
+| Git | Requerido para clonar el repositorio |
+| psql / pg_dump / pg_restore | Requeridos para cargar esquema, datasets o migrar datos |
+
+---
+
+## Variables de entorno
+
+Las variables productivas se toman de `.env.example`. Copiar ese archivo como `.env` o configurar los mismos nombres en el gestor de variables del proveedor.
+
+!!! warning "Seguridad"
+    El archivo `.env` real no debe subirse al repositorio. Solo debe versionarse `.env.example` sin credenciales reales.
+
+| Variable | Descripción | Ejemplo / valor esperado |
+|---|---|---|
+| `SPRING_PROFILES_ACTIVE` | Perfil activo del backend | `prod` |
+| `DB_URL` | URL JDBC de PostgreSQL o Supabase | `jdbc:postgresql://host:5432/postgres?sslmode=require` |
+| `DB_USER` | Usuario de base de datos | `postgres.xxxxx` o `sgip_user` |
+| `DB_PASSWORD` | Contraseña de base de datos | `********` |
+| `JWT_SECRET` | Clave privada para firma JWT | Cadena segura de mínimo 32 caracteres |
+| `JWT_EXPIRATION` | Duración del token en milisegundos | `3600000` |
+| `REPORTES_DIR` | Ruta donde se generan/leen reportes | `/opt/sgip/reportes` |
+| `MAIL_HOST` | Servidor SMTP opcional | `smtp.dominio.com` |
+| `MAIL_PORT` | Puerto SMTP | `587` |
+| `MAIL_USERNAME` | Usuario SMTP | `notificaciones@dominio.com` |
+| `MAIL_PASSWORD` | Contraseña SMTP | `********` |
+| `MAIL_FROM` | Remitente de correos | `noreply@metroica.pe` |
+| `MAIL_SMTP_AUTH` | Habilita autenticación SMTP | `true` |
+| `MAIL_SMTP_STARTTLS` | Habilita STARTTLS SMTP | `true` |
+| `IA_ENV` | Modo de ejecución de IA | `prod` |
+| `IA_API_URL` | Endpoint de datos de entrenamiento | `https://dominio/api/v1/inteligencia/datos-entrenamiento` |
+| `IA_PREDICCIONES_URL` | Endpoint de predicciones | `https://dominio/api/v1/inteligencia/predicciones` |
+| `IA_LOGIN_URL` | Endpoint de login para obtener token | `https://dominio/api/v1/auth/login` |
+| `IA_API_TOKEN` | JWT de usuario `ADMINISTRADOR` o `GERENTE` | `eyJhbGciOi...` |
 
 ---
 
@@ -42,6 +123,38 @@ El perfil `demo` carga datos automáticamente. Ideal para desarrollo rápido.
     ```
 
 El script `scripts/run-prod.sh` carga `.env`, valida las variables y arranca. **Solo disponible en Linux/macOS.**
+
+---
+
+## Paso a paso del despliegue (Deployment Pipeline)
+
+### Opción A: despliegue tradicional / manual
+
+Esta es la opción usada por SGIP en la versión actual.
+
+| Paso | Acción | Evidencia / comando principal |
+|---|---|---|
+| 1 | Clonar repositorio y seleccionar rama | `git clone`, `git checkout version5.0` |
+| 2 | Instalar dependencias backend/frontend/IA | Maven wrapper, `npm install`, `pip install -r requirements.txt` |
+| 3 | Configurar entorno | Copiar `.env.example` a `.env` y completar variables reales |
+| 4 | Compilar aplicación | `./mvnw package` y `npm run build` |
+| 5 | Preparar base de datos | Ejecutar esquema SQL y crear primer administrador |
+| 6 | Iniciar servicio | `bash scripts/run-prod.sh` o servicio `systemd` |
+| 7 | Verificar despliegue | Smoke tests con `curl`, login, dashboard e IA |
+
+El detalle operativo de estos pasos se desarrolla en las secciones siguientes para Supabase y VPS.
+
+### Opción B: despliegue contenedorizado (Docker)
+
+No aplica en la versión actual de SGIP. El repositorio no incluye `Dockerfile` ni `docker-compose.yml`, por lo que Docker queda como alternativa futura opcional y no como requisito de entrega.
+
+Si se implementa en una versión posterior, esta sección deberá documentar:
+
+1. Construcción de imagen backend.
+2. Construcción/servicio del frontend.
+3. Servicio PostgreSQL o conexión externa a Supabase.
+4. Variables de entorno seguras.
+5. Comando `docker compose up -d`.
 
 ---
 
@@ -193,7 +306,7 @@ Verificar que el backend arranca sin errores de esquema.
 
 ## Despliegue en VPS
 
-### Requisitos del servidor
+### Requisitos del servidor VPS
 
 | Componente | Recomendación |
 |---|---|
@@ -325,7 +438,42 @@ sudo certbot --nginx -d tudominio.com
 
 ---
 
-## Verificación post-despliegue
+## Integración continua y despliegue continuo (CI/CD)
+
+El proyecto incluye `Jenkinsfile` como base de integración continua. En la versión actual el pipeline automatiza validación y pruebas; el despliegue productivo se realiza manualmente con la Opción A.
+
+| Elemento | Definición actual |
+|---|---|
+| Herramienta | Jenkins |
+| Archivo pipeline | `Jenkinsfile` |
+| Disparador | Según configuración del servidor Jenkins: push, merge o ejecución manual |
+| Rama objetivo recomendada | `version5.0` o rama protegida de entrega |
+| Despliegue automático | No implementado en esta versión |
+
+### Etapas del pipeline actual
+
+| Etapa | Acción | Comando / evidencia |
+|---|---|---|
+| Checkout | Descarga el código fuente | `checkout scm` |
+| Pruebas unitarias, integración, regresión y smoke | Ejecuta suite backend Maven/JUnit/Cucumber | `./mvnw test` |
+| Selenium opcional | Ejecuta prueba UI si existe navegador/frontend | `RUN_SELENIUM_TESTS=true ./mvnw -Dtest=LoginSeleniumTest test` |
+| Publicación de reportes | Publica resultados JUnit | `target/surefire-reports/*.xml` |
+
+### Flujo recomendado antes de desplegar
+
+1. Ejecutar pipeline Jenkins o validar localmente con `./mvnw test`.
+2. Ejecutar auditoría frontend con `npm audit --omit=dev --audit-level=moderate`.
+3. Construir frontend con `npm run build`.
+4. Construir backend con `./mvnw package`.
+5. Aplicar scripts de base de datos en el ambiente destino.
+6. Arrancar backend con perfil `prod`.
+7. Ejecutar verificación post-despliegue.
+
+---
+
+## Monitoreo, verificación y rollback
+
+### Pruebas de humo post-despliegue
 
 ```bash
 # Backend responde
@@ -343,6 +491,72 @@ curl http://localhost:8080/api/v1/dashboard \
 # Predicciones IA
 curl http://localhost:8080/api/v1/inteligencia/predicciones \
   -H "Authorization: Bearer <TOKEN>"
+```
+
+Si el backend está detrás de Nginx o un dominio, reemplazar `localhost:8080` por la URL pública, por ejemplo `https://dominio-cliente`.
+
+### Verificación de base de datos
+
+El perfil `prod` usa `spring.jpa.hibernate.ddl-auto=validate`; por tanto, el backend valida el esquema pero no lo crea ni lo modifica automáticamente.
+
+```bash
+# Validar conexión y tablas principales
+psql "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
+  -c "select count(*) from usuarios;"
+```
+
+### Logs de producción
+
+Si se usa `systemd` en VPS:
+
+```bash
+# Estado del servicio
+sudo systemctl status sgip-backend
+
+# Logs en tiempo real
+sudo journalctl -u sgip-backend -f
+
+# Últimas líneas de logs
+sudo journalctl -u sgip-backend -n 100 --no-pager
+```
+
+Si se usa Nginx:
+
+```bash
+# Accesos HTTP
+sudo tail -f /var/log/nginx/access.log
+
+# Errores HTTP/proxy
+sudo tail -f /var/log/nginx/error.log
+```
+
+### Rollback
+
+Antes de publicar una nueva versión, conservar el artefacto anterior y un respaldo de base de datos validado.
+
+Procedimiento recomendado:
+
+1. Detener el servicio: `sudo systemctl stop sgip-backend`.
+2. Restaurar el `.jar` anterior en `/opt/sgip/sgip-backend.jar`.
+3. Restaurar `frontend/dist` anterior si el fallo está en UI.
+4. Revisar que `.env` siga apuntando a la configuración correcta.
+5. Reiniciar servicio: `sudo systemctl start sgip-backend`.
+6. Ejecutar pruebas de humo.
+7. Si el fallo involucra datos, restaurar backup PostgreSQL/Supabase aprobado antes del despliegue.
+
+Ejemplo de respaldo previo:
+
+```bash
+pg_dump "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
+  --no-owner --no-acl -Fc -f backup_pre_despliegue.dump
+```
+
+Ejemplo de restauración controlada:
+
+```bash
+pg_restore --clean --if-exists --no-owner --no-acl \
+  -d "postgresql://USUARIO:CONTRASEÑA@HOST:5432/postgres?sslmode=require" \
+  backup_pre_despliegue.dump
 ```
 
 ---

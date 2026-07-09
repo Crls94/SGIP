@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import './TopBar.css';
 
-export function TopBar({ title }) {
+export function TopBar({ title, onMenuClick }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -27,7 +27,7 @@ export function TopBar({ title }) {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <button type="button" className="topbar-menu" title="Menu">
+        <button type="button" className="topbar-menu" title="Menu" aria-label="Abrir menu" onClick={onMenuClick}>
           <span />
           <span />
           <span />

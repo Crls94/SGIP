@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
@@ -39,11 +39,16 @@ const homeByRole = {
 function AppLayout({ children }) {
   const location = useLocation();
   const title = pageTitles[location.pathname] || 'SGIP';
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="app-layout">
-      <Sidebar />
-      <TopBar title={title} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <TopBar title={title} onMenuClick={() => setSidebarOpen((open) => !open)} />
       <main className="main-content">{children}</main>
     </div>
   );

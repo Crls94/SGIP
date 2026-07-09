@@ -82,14 +82,16 @@ export default function Proveedores() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm('Eliminar este proveedor?')) return;
+  const cambiarActivo = async (proveedor) => {
+    const activar = !proveedor.activo;
+    const accion = activar ? 'reactivar' : 'desactivar';
+    if (!confirm(`${activar ? 'Reactivar' : 'Desactivar'} este proveedor? No se eliminara el historial asociado.`)) return;
     try {
-      await api.delete(`/proveedores/${id}`);
-      toast('Proveedor eliminado', 'success');
+      await api.patch(`/proveedores/${proveedor.id}/${accion}`);
+      toast(activar ? 'Proveedor reactivado' : 'Proveedor desactivado', 'success');
       fetchProveedores();
     } catch (err) {
-      toast(err.response?.data?.error || 'Error al eliminar', 'error');
+      toast(err.response?.data?.error || `Error al ${accion}`, 'error');
     }
   };
 
@@ -128,16 +130,21 @@ export default function Proveedores() {
       ) : (
         <div className="page-grid">
           {proveedores.map((p) => (
-            <div key={p.id} className="card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
+            <div key={p.id} className="card" style={{ borderLeft: `4px solid ${p.activo ? 'var(--color-primary)' : 'var(--text-tertiary)'}`, opacity: p.activo ? 1 : 0.78 }}>
               <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <h3 style={{ fontSize: 16 }}>{p.nombre}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <h3 style={{ fontSize: 16 }}>{p.nombre}</h3>
+                    <span className={`badge ${p.activo ? 'badge-success' : 'badge-neutral'}`}>{p.activo ? 'Activo' : 'Inactivo'}</span>
+                  </div>
                   {p.ruc && <div className="micro" style={{ marginTop: 2 }}>RUC: {p.ruc}</div>}
                 </div>
                 {isAdmin && (
                   <div className="flex-row" style={{ gap: 6 }}>
                     <button className="btn btn-outline btn-sm" onClick={() => openEdit(p)}>Editar</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p.id)}>Eliminar</button>
+                    <button className={`btn btn-sm ${p.activo ? 'btn-danger' : 'btn-accent'}`} onClick={() => cambiarActivo(p)}>
+                      {p.activo ? 'Desactivar' : 'Reactivar'}
+                    </button>
                   </div>
                 )}
               </div>

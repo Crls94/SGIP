@@ -4,14 +4,14 @@
 --
 -- Ejemplo:
 -- psql -h localhost -U sgip_user -d metroDB_cliente \
---   -v admin_email='admin123@gmail.com' \
+--   -v admin_email='admin@cliente.com' \
 --   -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
 
 \set ON_ERROR_STOP on
 
 \if :{?admin_email}
 \else
-\set admin_email 'admin123@gmail.com'
+\set admin_email 'admin@cliente.com'
 \endif
 
 DO $$

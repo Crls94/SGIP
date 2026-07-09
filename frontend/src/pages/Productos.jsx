@@ -18,12 +18,13 @@ const emptyForm = {
 };
 
 export default function Productos() {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isGerente } = useAuth();
   const toast = useToast();
   const [productos, setProductos] = useState({ content: [], totalPages: 0 });
   const [page, setPage] = useState(0);
   const [categorias, setCategorias] = useState([]);
   const [proveedores, setProveedores] = useState([]);
+  const [proveedoresActivos, setProveedoresActivos] = useState([]);
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -47,9 +48,8 @@ export default function Productos() {
 
   useEffect(() => {
     api.get('/categorias').then(({ data }) => setCategorias(data)).catch(() => {});
-    api.get('/proveedores').then(({ data }) => {
-      setProveedores(data);
-    }).catch(() => {});
+    api.get('/proveedores').then(({ data }) => setProveedores(data)).catch(() => {});
+    api.get('/proveedores?activo=true').then(({ data }) => setProveedoresActivos(data)).catch(() => {});
   }, []);
 
   const openCreate = () => { 
@@ -150,6 +150,9 @@ export default function Productos() {
       || (stockFiltro === 'sin_stock' && p.stockActual <= 0);
     return coincideTexto && coincideCategoria && coincideProveedor && coincideStock;
   });
+  const proveedoresSeleccionables = editingId && proveedorSeleccionado
+    ? [...proveedoresActivos.filter((p) => p.id !== proveedorSeleccionado.id), proveedorSeleccionado]
+    : proveedoresActivos;
 
   return (
     <div>
@@ -160,10 +163,10 @@ export default function Productos() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
             Agregar Producto
           </button>}
-          <button className="btn btn-outline" onClick={exportarInventario}>
+          {(isAdmin || isGerente) && <button className="btn btn-outline" onClick={exportarInventario}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
             Exportar
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -269,7 +272,7 @@ export default function Productos() {
           <div className="form-group">
             <label>Proveedor <span style={{ color: 'var(--text-tertiary)' }}>(Escriba para buscar por nombre)</span></label>
             <SearchableSelect
-              options={proveedores}
+              options={proveedoresSeleccionables}
               value={form.proveedorId}
               onChange={handleProveedorChange}
               placeholder="Buscar proveedor..."

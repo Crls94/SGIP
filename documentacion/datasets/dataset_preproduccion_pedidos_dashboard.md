@@ -29,7 +29,7 @@ Adicionales/dataset_preproduccion_pedidos_dashboard.sql
 
 ```bash
 psql -h localhost -U sgip_user -d metroDB_cliente \
-  -v admin_email='admin123@gmail.com' \
+  -v admin_email='admin@cliente.com' \
   -f Adicionales/dataset_preproduccion_pedidos_dashboard.sql
 ```
 

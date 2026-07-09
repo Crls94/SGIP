@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtUtilTest {
 
     private final JwtUtil jwtUtil = new JwtUtil(
-            "c2dpcC1iYWNrZW5kLWp3dC1zZWNyZXQta2V5LTIwMjUtbWV0cm9pY2Etc2VndXJv",
+            "dev-only-jwt-secret-change-me-32chars",
             86400000L
     );
 
@@ -37,7 +37,7 @@ class JwtUtilTest {
 
         // Preparacion: se crea una utilidad JWT con tiempo de expiracion negativo para simular vencimiento.
         JwtUtil jwtExpirado = new JwtUtil(
-                "c2dpcC1iYWNrZW5kLWp3dC1zZWNyZXQta2V5LTIwMjUtbWV0cm9pY2Etc2VndXJv",
+                "dev-only-jwt-secret-change-me-32chars",
                 -1000L
         );
 

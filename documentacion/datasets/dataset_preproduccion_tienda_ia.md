@@ -42,11 +42,11 @@ Ejecutar despues de aplicar el esquema y crear el primer administrador:
 
 ```bash
 psql -h localhost -U sgip_user -d metroDB_cliente \
-  -v admin_email='admin123@gmail.com' \
+  -v admin_email='admin@cliente.com' \
   -f Adicionales/dataset_preproduccion_tienda_ia.sql
 ```
 
-Si no se envia `admin_email`, el script usa `admin123@gmail.com` por defecto.
+Si no se envia `admin_email`, el script usa `admin@cliente.com` por defecto.
 
 ## Seguridad
 

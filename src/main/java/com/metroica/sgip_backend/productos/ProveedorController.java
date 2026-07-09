@@ -17,8 +17,11 @@ public class ProveedorController {
     private final ProveedorRepository proveedorRepository;
 
     @GetMapping
-    public ResponseEntity<List<Proveedor>> listarProveedores() {
-        return ResponseEntity.ok(proveedorRepository.findAll());
+    public ResponseEntity<List<Proveedor>> listarProveedores(@RequestParam(required = false) Boolean activo) {
+        if (activo != null) {
+            return ResponseEntity.ok(proveedorRepository.findByActivoOrderByNombreAsc(activo));
+        }
+        return ResponseEntity.ok(proveedorRepository.findAllByOrderByNombreAsc());
     }
 
     @PostMapping
@@ -47,10 +50,26 @@ public class ProveedorController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<Void> eliminarProveedor(@PathVariable Integer id) {
-        if (!proveedorRepository.existsById(id)) {
-            throw new RuntimeException("Proveedor no encontrado: " + id);
-        }
-        proveedorRepository.deleteById(id);
+        cambiarActivo(id, false);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/desactivar")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Proveedor> desactivarProveedor(@PathVariable Integer id) {
+        return ResponseEntity.ok(cambiarActivo(id, false));
+    }
+
+    @PatchMapping("/{id}/activar")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<Proveedor> activarProveedor(@PathVariable Integer id) {
+        return ResponseEntity.ok(cambiarActivo(id, true));
+    }
+
+    private Proveedor cambiarActivo(Integer id, boolean activo) {
+        Proveedor proveedor = proveedorRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Proveedor no encontrado: " + id));
+        proveedor.setActivo(activo);
+        return proveedorRepository.save(proveedor);
     }
 }

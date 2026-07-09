@@ -24,7 +24,7 @@
   height: 30px;
   border: none;
   background: transparent;
-  display: inline-flex;
+  display: none;
   flex-direction: column;
   justify-content: center;
   gap: 4px;
@@ -118,6 +118,7 @@
 
 @media (max-width: 768px) {
   .topbar { padding: 0 12px; }
+  .topbar-menu { display: inline-flex; }
   .topbar-user-rol,
   .topbar-date { display: none; }
 }
